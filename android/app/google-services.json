@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "445090650606",
+    "project_id": "agribazar-4ad4b",
+    "storage_bucket": "agribazar-4ad4b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445090650606:android:b54741a6d27a807a8716ff",
+        "android_client_info": {
+          "package_name": "com.example.agribazar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDz2UdhOSU_dNQLbkP_RIi-ue2y0dBzw78"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
