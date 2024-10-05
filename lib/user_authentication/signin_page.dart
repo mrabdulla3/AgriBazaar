@@ -8,6 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import './forgotpassword.dart';
 
 class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
   @override
   State<SignInPage> createState() => _SignInPageState();
 }
@@ -135,7 +136,7 @@ class _SignInPageState extends State<SignInPage> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        prefixIcon: Icon(Icons.email),
+                        prefixIcon: const Icon(Icons.email),
                       ),
                     ),
                     const SizedBox(height: 15),
@@ -207,7 +208,7 @@ class _SignInPageState extends State<SignInPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ForgotPassword(),
+                              builder: (context) => const ForgotPassword(),
                             ),
                           );
                         },

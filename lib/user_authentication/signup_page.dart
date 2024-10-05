@@ -7,17 +7,19 @@ import './terms_and_conditions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
   @override
   State<SignUpPage> createState() => _SignUpPageState();
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  String email = "", password = "", userType = "Farmer";
+  String email = "", password = "", userType = "Farmer", name = "";
   bool isChecked = false;
   bool _passwordVisible = false;
 
   TextEditingController mailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -33,6 +35,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
         // Store user data (including userType) in Firestore
         await FirebaseFirestore.instance.collection("users").doc(uid).set({
+          'name': name,
           'email': email,
           'userType': userType, // Store Farmer or Buyer
           'createdAt': Timestamp.now(),
@@ -105,6 +108,25 @@ class _SignUpPageState extends State<SignUpPage> {
                   width: 150,
                 ),
                 const SizedBox(height: 30),
+
+                SizedBox(
+                  width: screenWidth * 0.9,
+                  child: TextFormField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Name',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter the name';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 15),
 
                 // Email Field
                 SizedBox(
@@ -224,6 +246,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate() && isChecked) {
                         setState(() {
+                          name = nameController.text;
                           email = mailController.text;
                           password = passwordController.text;
                         });

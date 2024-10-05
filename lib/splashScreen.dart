@@ -1,10 +1,100 @@
 import 'package:agribazar/Buyers/buyers_home.dart';
+import 'package:agribazar/Farmer/farmer_home.dart';
 import 'package:agribazar/user_authentication/authScreen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class Splashscreen extends StatelessWidget {
+class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
+
+  @override
+  State<Splashscreen> createState() => _SplashscreenState();
+}
+
+class _SplashscreenState extends State<Splashscreen> {
+  @override
+  void initState() {
+    super.initState();
+    _navigateToNextScreen();
+  }
+
+  // Function to navigate based on authentication state
+  Future<void> _navigateToNextScreen() async {
+    await Future.delayed(const Duration(seconds: 4));
+
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      // User is logged in, fetch user type from Firestore
+      _getUserTypeAndNavigate(user.uid);
+    } else {
+      // User is not logged in, navigate to AuthScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AuthScreen(),
+        ),
+      );
+    }
+  }
+
+  // Function to fetch user type and navigate accordingly
+  Future<void> _getUserTypeAndNavigate(String uid) async {
+    try {
+      DocumentSnapshot userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+      if (userDoc.exists) {
+        String userType = userDoc['userType'];
+
+        if (userType == 'Farmer') {
+          // Navigate to Farmer Dashboard
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  SellerDashboard(user: FirebaseAuth.instance.currentUser!),
+            ),
+          );
+        } else if (userType == 'Buyer') {
+          // Navigate to Buyer Dashboard
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  MarketHomePage(user: FirebaseAuth.instance.currentUser!),
+            ),
+          );
+        } else {
+          // User data not found, show a message and navigate to AuthScreen
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("User data not found. Please register."),
+          ));
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AuthScreen(),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Handle errors
+      print('Error fetching user data: $e');
+
+      // If there's an error, navigate to the AuthScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AuthScreen(),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;

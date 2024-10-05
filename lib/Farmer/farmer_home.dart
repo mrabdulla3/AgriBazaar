@@ -1,3 +1,8 @@
+import 'package:agribazar/Farmer/category_crops.dart';
+import 'package:agribazar/Farmer/chat_message.dart';
+import 'package:agribazar/Farmer/notifications.dart';
+import 'package:agribazar/Farmer/profile.dart';
+import 'package:agribazar/user_authentication/authScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -15,8 +20,13 @@ class SellerDashboard extends StatelessWidget {
         backgroundColor: Colors.yellow[700],
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {},
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.of(context).pushReplacement(MaterialPageRoute(
+                builder: (context) => const AuthScreen(),
+              ));
+            },
           ),
         ],
       ),
@@ -28,25 +38,25 @@ class SellerDashboard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               color: Colors.yellow[700],
-              child: const Row(
+              child: Row(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 35,
                     backgroundImage: AssetImage(
                         'assets/user.png'), // Replace with user's image
                   ),
-                  SizedBox(width: 15),
+                  const SizedBox(width: 15),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Hi, Abdulla",
-                        style: TextStyle(
+                        user.displayName ?? "",
+                        style: const TextStyle(
                             fontSize: 22, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        "India  Seller Level 1",
-                        style: TextStyle(fontSize: 16),
+                        user.email ?? "",
+                        style: const TextStyle(fontSize: 16),
                       ),
                     ],
                   ),
@@ -148,25 +158,75 @@ class SellerDashboard extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: IconButton(
+              icon: const Icon(Icons.home),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SellerDashboard(
+                        user: user,
+                      ),
+                    ));
+              },
+            ),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.mail),
-            label: 'Messages',
+            icon: IconButton(
+              icon: const Icon(Icons.mail),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatMessageFarmer(),
+                    ));
+              },
+            ),
+            label: 'Message',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle, size: 40),
-            label: '',
+            icon: IconButton(
+              icon: const Icon(
+                Icons.add_circle,
+                size: 40,
+              ),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CropCategoriesPage(),
+                    ));
+              },
+            ),
+            label: "",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
+            icon: IconButton(
+              icon: const Icon(Icons.notifications),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NotificationsFarmer(),
+                    ));
+              },
+            ),
+            label: 'Notification',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: IconButton(
+              icon: Icon(Icons.person),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfileFarmer(),
+                    ));
+              },
+            ),
             label: 'Profile',
           ),
         ],

@@ -1,3 +1,11 @@
+import 'package:agribazar/Buyers/cart.dart';
+import 'package:agribazar/Buyers/category.dart';
+import 'package:agribazar/Buyers/chat_message.dart';
+import 'package:agribazar/Buyers/detailed_page.dart';
+import 'package:agribazar/Buyers/notification.dart';
+import 'package:agribazar/Buyers/pricing.dart';
+import 'package:agribazar/Buyers/profile.dart';
+import 'package:agribazar/Buyers/sidebar.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -12,18 +20,32 @@ class MarketHomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
-        ),
         title: const Text('AgriBazaar'),
+        centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.mail),
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatMessage(),
+                  ));
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.notifications),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Notifications(),
+                  ));
+            },
           ),
         ],
       ),
+      drawer: Sidebar(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -36,7 +58,9 @@ class MarketHomePage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: Colors.blue, width: 2),
+                  border: Border.all(
+                      color: const Color.fromARGB(255, 113, 109, 109),
+                      width: 2),
                 ),
                 child: const TextField(
                   decoration: InputDecoration(
@@ -102,21 +126,57 @@ class MarketHomePage extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: IconButton(
+              icon: Icon(Icons.home),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MarketHomePage(),
+                    ));
+              },
+            ),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
+            icon: IconButton(
+              icon: Icon(Icons.shopping_cart),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Cart(),
+                    ));
+              },
+            ),
             label: 'Cart',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.monetization_on),
+            icon: IconButton(
+              icon: Icon(Icons.monetization_on),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Pricing(),
+                    ));
+              },
+            ),
             label: 'Pricing',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: IconButton(
+              icon: Icon(Icons.person),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Profile(),
+                    ));
+              },
+            ),
             label: 'Profile',
           ),
         ],
@@ -128,9 +188,18 @@ class MarketHomePage extends StatelessWidget {
   Widget buildCategoryItem(String title, String imagePath) {
     return Column(
       children: [
-        CircleAvatar(
-          radius: 30,
-          backgroundImage: AssetImage(imagePath),
+        GestureDetector(
+          onTap: () {
+            // Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //       builder: (context) => Categorys(),
+            //     ));
+          },
+          child: CircleAvatar(
+            radius: 30,
+            backgroundImage: AssetImage(imagePath),
+          ),
         ),
         const SizedBox(height: 5),
         Text(title),
@@ -143,35 +212,44 @@ class MarketHomePage extends StatelessWidget {
     return SizedBox(
       width: 150,
       height: 220,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.asset(
-              imagePath,
-              height: 120,
-              width: double.infinity,
-              fit: BoxFit.cover,
+      child: GestureDetector(
+        onTap: () {
+          // Navigator.push(
+          //     context,
+          //     MaterialPageRoute(
+          //       builder: (context) => DetailedPage(),
+          //     ));
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                imagePath,
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            name,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            price,
-            style: const TextStyle(fontSize: 16, color: Colors.green),
-          ),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: IconButton(
-              icon: const Icon(Icons.add_circle_outline, color: Colors.brown),
-              onPressed: () {},
+            const SizedBox(height: 10),
+            Text(
+              name,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          ),
-        ],
+            Text(
+              price,
+              style: const TextStyle(fontSize: 16, color: Colors.green),
+            ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: IconButton(
+                icon: const Icon(Icons.add_circle_outline, color: Colors.brown),
+                onPressed: () {},
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

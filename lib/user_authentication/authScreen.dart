@@ -26,11 +26,12 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
   @override
-  _AuthScreenState createState() => _AuthScreenState();
+  AuthScreenState createState() => AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class AuthScreenState extends State<AuthScreen> {
   bool isLogin = true;
 
   @override
@@ -38,7 +39,7 @@ class _AuthScreenState extends State<AuthScreen> {
     return Scaffold(
       body: Center(
         child: AnimatedSwitcher(
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           child: isLogin ? SignInPage() : SignUpPage(),
         ),
       ),
