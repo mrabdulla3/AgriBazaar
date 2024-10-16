@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:agribazar/Buyers/buyers_home.dart';
 import 'package:agribazar/Farmer/farmer_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,7 +15,14 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  String email = "", password = "", userType = "Farmer", name = "";
+  bool isLoading = false;
+  String email = "",
+      password = "",
+      userType = "Farmer",
+      name = "",
+      address = "Street, House No. City",
+      phone = "Phone",
+      profileImageUrl = "";
   bool isChecked = false;
   bool _passwordVisible = false;
 
@@ -24,6 +33,9 @@ class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
 
   registration() async {
+    setState(() {
+      isLoading = true;
+    });
     if (password.isNotEmpty && email.isNotEmpty) {
       try {
         // Register user in Firebase Authentication
@@ -39,6 +51,9 @@ class _SignUpPageState extends State<SignUpPage> {
           'email': email,
           'userType': userType, // Store Farmer or Buyer
           'createdAt': Timestamp.now(),
+          'address': address,
+          'phone': phone,
+          'profileImageUrl': profileImageUrl
         });
 
         // Display success message
@@ -237,32 +252,35 @@ class _SignUpPageState extends State<SignUpPage> {
                 SizedBox(
                   width: screenWidth * 0.9,
                   height: screenHeight * 0.06,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate() && isChecked) {
-                        setState(() {
-                          name = nameController.text;
-                          email = mailController.text;
-                          password = passwordController.text;
-                        });
-                        registration();
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    "Please accept the terms and conditions")));
-                      }
-                    },
-                    child: const Text(
-                      'Sign Up',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
+                  child: isLoading
+                      ? Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
+                          onPressed: () {
+                            if (_formKey.currentState!.validate() &&
+                                isChecked) {
+                              setState(() {
+                                name = nameController.text;
+                                email = mailController.text;
+                                password = passwordController.text;
+                              });
+                              registration();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          "Please accept the terms and conditions")));
+                            }
+                          },
+                          child: const Text(
+                            'Sign Up',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                        ),
                 ),
               ],
             ),

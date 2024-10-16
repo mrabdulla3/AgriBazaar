@@ -1,18 +1,24 @@
 import 'package:agribazar/Buyers/cart.dart';
-import 'package:agribazar/Buyers/category.dart';
 import 'package:agribazar/Buyers/chat_message.dart';
-import 'package:agribazar/Buyers/detailed_page.dart';
 import 'package:agribazar/Buyers/notification.dart';
 import 'package:agribazar/Buyers/pricing.dart';
 import 'package:agribazar/Buyers/profile.dart';
 import 'package:agribazar/Buyers/sidebar.dart';
+import 'package:agribazar/user_authentication/signup_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class MarketHomePage extends StatelessWidget {
+class MarketHomePage extends StatefulWidget {
   final User? user;
 
   const MarketHomePage({this.user, super.key});
+
+  @override
+  State<MarketHomePage> createState() => _MarketHomePageState();
+}
+
+class _MarketHomePageState extends State<MarketHomePage> {
+  Future<void> _getCrops() async {}
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -132,10 +138,11 @@ class MarketHomePage extends StatelessWidget {
               icon: Icon(Icons.home),
               onPressed: () {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MarketHomePage(),
-                    ));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MarketHomePage(),
+                  ),
+                );
               },
             ),
             label: 'Home',
@@ -145,10 +152,11 @@ class MarketHomePage extends StatelessWidget {
               icon: Icon(Icons.shopping_cart),
               onPressed: () {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Cart(),
-                    ));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Cart(),
+                  ),
+                );
               },
             ),
             label: 'Cart',
@@ -158,10 +166,11 @@ class MarketHomePage extends StatelessWidget {
               icon: Icon(Icons.monetization_on),
               onPressed: () {
                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Pricing(),
-                    ));
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Pricing(),
+                  ),
+                );
               },
             ),
             label: 'Pricing',
@@ -170,11 +179,25 @@ class MarketHomePage extends StatelessWidget {
             icon: IconButton(
               icon: Icon(Icons.person),
               onPressed: () {
-                Navigator.push(
+                if (widget.user != null) {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Profile(),
-                    ));
+                      builder: (context) => Profile(
+                        user: widget.user!, // Pass the user if not null
+                      ),
+                    ),
+                  );
+                } else {
+                  // Navigate to the signup page if user is null
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          SignUpPage(), // Your signup page widget
+                    ),
+                  );
+                }
               },
             ),
             label: 'Profile',

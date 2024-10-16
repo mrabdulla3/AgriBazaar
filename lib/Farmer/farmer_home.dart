@@ -3,13 +3,44 @@ import 'package:agribazar/Farmer/chat_message.dart';
 import 'package:agribazar/Farmer/notifications.dart';
 import 'package:agribazar/Farmer/profile.dart';
 import 'package:agribazar/user_authentication/authScreen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class SellerDashboard extends StatelessWidget {
+class SellerDashboard extends StatefulWidget {
   final User user;
 
   const SellerDashboard({required this.user, super.key});
+
+  @override
+  State<SellerDashboard> createState() => _SellerDashboardState();
+}
+
+class _SellerDashboardState extends State<SellerDashboard> {
+  Map<String, dynamic>? userProfileData;
+  @override
+  void initState() {
+    super.initState();
+    _getUserInfo();
+  }
+
+  Future<void> _getUserInfo() async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.user.uid)
+          .get();
+
+      if (userDoc.exists) {
+        setState(() {
+          userProfileData = userDoc.data() as Map<String, dynamic>;
+        });
+      }
+    } catch (e) {
+      print('Error fetching user profile data: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     //double screenHeight = MediaQuery.of(context).size.height;
@@ -40,22 +71,30 @@ class SellerDashboard extends StatelessWidget {
               color: Colors.yellow[700],
               child: Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 35,
-                    backgroundImage: AssetImage(
-                        'assets/user.png'), // Replace with user's image
+                    backgroundImage: userProfileData != null &&
+                            userProfileData!['profileImageUrl'] != null
+                        ? NetworkImage(userProfileData!['profileImageUrl'])
+                            as ImageProvider
+                        : null, // If image doesn't exist, show icon instead
+                    child: userProfileData == null ||
+                            userProfileData!['profileImageUrl'] == null
+                        ? const Icon(Icons.person,
+                            size: 35) // Show person icon if no image
+                        : null,
                   ),
                   const SizedBox(width: 15),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        user.displayName ?? "",
+                        userProfileData!['name'] ?? widget.user.displayName,
                         style: const TextStyle(
                             fontSize: 22, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        user.email ?? "",
+                        widget.user.email ?? "",
                         style: const TextStyle(fontSize: 16),
                       ),
                     ],
@@ -167,7 +206,7 @@ class SellerDashboard extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => SellerDashboard(
-                        user: user,
+                        user: widget.user,
                       ),
                     ));
               },
@@ -223,7 +262,8 @@ class SellerDashboard extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProfileFarmer(),
+                      builder: (context) => ProfileFarmer(
+                          user: FirebaseAuth.instance.currentUser!),
                     ));
               },
             ),

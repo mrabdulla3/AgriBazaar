@@ -17,6 +17,7 @@ class CropDetailsPage extends StatefulWidget {
 class _CropDetailsPageState extends State<CropDetailsPage> {
   File? selectedFile;
   final _formKey = GlobalKey<FormState>();
+  bool isLoading = false; // Loading state
 
   // Controllers for input fields
   final TextEditingController _cropTypeController = TextEditingController();
@@ -25,6 +26,8 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _keyFeatureController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _farmerAddressController =
+      TextEditingController();
   String category = "Organic"; // Default crop category
 
   @override
@@ -36,12 +39,17 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
 
   void saveForm() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        isLoading = true; // Start loading when the form is being saved
+      });
+
       String cropCategory = _cropTypeController.text.trim();
       String cropVariety = _cropVarietyController.text.trim();
       String cropQuantity = _quantityController.text.trim();
       String cropPrice = _priceController.text.trim();
       String feature = _keyFeatureController.text.trim();
       String description = _descriptionController.text.trim();
+      String farmerAddress = _descriptionController.text.trim();
 
       String categoryDirectory =
           _cropTypeController.text.trim(); // "Organic", "Hybrid", "Inorganic"
@@ -68,13 +76,22 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
           "Category": category,
           "Features": feature,
           "Description": description,
-          "Crop Image": downloadUrl
+          "Crop Image": downloadUrl,
+          "Address": farmerAddress
         };
 
-        FirebaseFirestore.instance.collection('FormCropDetail').add(cropForm);
-        print('Form submitted successfully!');
+        await FirebaseFirestore.instance
+            .collection('FormCropDetail')
+            .add(cropForm);
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Form submitted successfully!')),
+        );
       } else {
-        print('Please select an image.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select an image.')),
+        );
       }
 
       // Clearing fields after form submission
@@ -84,12 +101,16 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
       _priceController.clear();
       _keyFeatureController.clear();
       _descriptionController.clear();
+      _farmerAddressController.clear();
 
       setState(() {
         selectedFile = null;
+        isLoading = false; // Stop loading after form submission
       });
     } else {
-      print('Please fill all required fields');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all required fields')),
+      );
     }
   }
 
@@ -139,12 +160,16 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                buildTextField("Crop Type*", _cropTypeController),
+                buildNonEditableTextField("Crop Type*", _cropTypeController),
                 buildTextField("Crop Variety", _cropVarietyController),
                 buildTextField("Quantity *", _quantityController,
-                    inputType: TextInputType.number),
+                    inputType: TextInputType.text),
                 buildTextField("Price *", _priceController,
-                    inputType: TextInputType.number),
+                    inputType: TextInputType.text),
+                const SizedBox(height: 16),
+                buildTextField(
+                    "Address: village, city pin.. *", _farmerAddressController,
+                    inputType: TextInputType.text),
                 const SizedBox(height: 16),
                 const Text("Category",
                     style: TextStyle(fontSize: 16, color: Colors.white70)),
@@ -166,28 +191,31 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
                     maxLines: 6,
                     maxLength: 4096),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFDBE42), // Yellow color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color(0xFFFDBE42), // Yellow color
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () {
+                            saveForm();
+                          },
+                          child: Text(
+                            'Save',
+                            style: GoogleFonts.aclonica(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    onPressed: () {
-                      saveForm();
-                    },
-                    child: Text(
-                      'Save',
-                      style: GoogleFonts.aclonica(
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -228,6 +256,26 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
     );
   }
 
+  // For Crop Type field (not editable)
+  Widget buildNonEditableTextField(
+      String label, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white70)),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          enabled: false, // This makes the field non-editable
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
   // Helper method to build category buttons
   Widget buildCategoryButton(String buttonText, String currentCategory) {
     return Expanded(
@@ -240,7 +288,8 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
         child: Text(buttonText),
         style: ElevatedButton.styleFrom(
           backgroundColor:
-              category == buttonText ? const Color(0xFFFDBE42) : Colors.grey,
+              category == buttonText ? const Color(0xFFFDBE42) : Colors.white,
+          foregroundColor: category == buttonText ? Colors.white : Colors.black,
         ),
       ),
     );

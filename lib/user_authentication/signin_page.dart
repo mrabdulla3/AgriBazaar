@@ -18,6 +18,7 @@ class _SignInPageState extends State<SignInPage> {
   String email = "", password = "";
   bool rememberMe = false;
   bool _passwordVisible = false;
+  bool isLoading = false;
 
   TextEditingController mailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -25,6 +26,9 @@ class _SignInPageState extends State<SignInPage> {
   final _formkey = GlobalKey<FormState>();
 
   userLogin() async {
+    setState(() {
+      isLoading = true;
+    });
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
@@ -173,31 +177,33 @@ class _SignInPageState extends State<SignInPage> {
                     SizedBox(
                       width: double.infinity,
                       height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color(0xFFFDBE42), // Yellow color
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: () {
-                          if (_formkey.currentState!.validate()) {
-                            setState(() {
-                              email = mailController.text;
-                              password = passwordController.text;
-                            });
-                            userLogin();
-                          }
-                        },
-                        child: Text(
-                          'Sign In',
-                          style: GoogleFonts.aclonica(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                      child: isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color(0xFFFDBE42), // Yellow color
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () {
+                                if (_formkey.currentState!.validate()) {
+                                  setState(() {
+                                    email = mailController.text;
+                                    password = passwordController.text;
+                                  });
+                                  userLogin();
+                                }
+                              },
+                              child: Text(
+                                'Sign In',
+                                style: GoogleFonts.aclonica(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                     ),
                     const SizedBox(height: 10),
                     // Forgot Password

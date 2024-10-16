@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
@@ -14,6 +15,8 @@ class Splashscreen extends StatefulWidget {
 }
 
 class _SplashscreenState extends State<Splashscreen> {
+  bool userExist = false;
+
   @override
   void initState() {
     super.initState();
@@ -27,10 +30,16 @@ class _SplashscreenState extends State<Splashscreen> {
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      // User is logged in, fetch user type from Firestore
+      // User is logged in, set userExist to true and navigate
+      setState(() {
+        userExist = true;
+      });
       _getUserTypeAndNavigate(user.uid);
     } else {
-      // User is not logged in, navigate to AuthScreen
+      // User is not logged in, set userExist to false and show AuthScreen
+      setState(() {
+        userExist = false;
+      });
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -50,7 +59,6 @@ class _SplashscreenState extends State<Splashscreen> {
         String userType = userDoc['userType'];
 
         if (userType == 'Farmer') {
-          // Navigate to Farmer Dashboard
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -59,7 +67,6 @@ class _SplashscreenState extends State<Splashscreen> {
             ),
           );
         } else if (userType == 'Buyer') {
-          // Navigate to Buyer Dashboard
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -68,11 +75,10 @@ class _SplashscreenState extends State<Splashscreen> {
             ),
           );
         } else {
-          // User data not found, show a message and navigate to AuthScreen
+          // Show error message if user data not found
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text("User data not found. Please register."),
           ));
-
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -82,14 +88,12 @@ class _SplashscreenState extends State<Splashscreen> {
         }
       }
     } catch (e) {
-      // Handle errors
+      // Handle errors and navigate to AuthScreen in case of failure
       print('Error fetching user data: $e');
-
-      // If there's an error, navigate to the AuthScreen
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => AuthScreen(),
+          builder: (context) => const AuthScreen(),
         ),
       );
     }
@@ -114,148 +118,165 @@ class _SplashscreenState extends State<Splashscreen> {
               ),
             ),
           ),
-          // Dark overlay to make text visible on image
+          // Overlay for text visibility
           Positioned(
             top: screenHeight * 0.5,
             child: Container(
-              height: screenHeight * 0.5,
-              width: screenWidth,
-              decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.4),
-                  borderRadius: const BorderRadius.only(
+                height: screenHeight * 0.5,
+                width: screenWidth,
+                decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.4),
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(70),
-                      topRight: Radius.circular(70))),
-              // Adjust opacity for visibility
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 30.0, horizontal: 16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // App logo and title
-                        Column(
-                          children: [
-                            Text(
-                              'AgriBazaar',
-                              style: GoogleFonts.poppins(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'The AgriBazaar app connecting\nfarmers with buyers for secure agreements.',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Buttons for Sign In and Sign Up
-                        const SizedBox(
-                          height: 30,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Colors.green, // Sign In button color
-                                minimumSize: Size(screenWidth * 0.3, 50),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AuthScreen(),
-                                    ));
-                              },
-                              child: Text(
-                                'Sign in',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Colors.black, // Sign Up button color
-                                minimumSize: Size(screenWidth * 0.3, 50),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AuthScreen(),
-                                    ));
-                              },
-                              child: Text(
-                                'SignUp',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        // Skip button with icon
-                        const SizedBox(
-                          height: 70,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                // Handle Skip button press
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            MarketHomePage(user: null)));
-                              },
-                              child: Row(
-                                children: [
-                                  Text(
-                                    'Skip',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 18,
-                                      color: Colors.white,
+                      topRight: Radius.circular(70),
+                    )),
+                child: userExist
+                    ? Column(
+                        // Show container content if user does not exist
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 30.0, horizontal: 16.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // App logo and title
+                                Column(
+                                  children: [
+                                    Text(
+                                      'AgriBazaar',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 36,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  const Icon(
-                                    Icons.arrow_forward,
-                                    color: Colors.white,
-                                  ),
-                                ],
-                              ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'The AgriBazaar app connecting\nfarmers with buyers for secure agreements.',
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                // Buttons for Sign In and Sign Up
+                                const SizedBox(height: 30),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors
+                                            .green, // Sign In button color
+                                        minimumSize:
+                                            Size(screenWidth * 0.3, 50),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => AuthScreen(),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        'Sign in',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 18,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors
+                                            .black, // Sign Up button color
+                                        minimumSize:
+                                            Size(screenWidth * 0.3, 50),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const AuthScreen(),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        'SignUp',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 18,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                // Skip button with icon
+                                const SizedBox(height: 70),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const MarketHomePage(
+                                                      user: null),
+                                            ));
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            'Skip',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 18,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          const Icon(
+                                            Icons.arrow_forward,
+                                            color: Colors.white,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
+                        ],
+                      )
+                    : const Center(
+                        // Show loading indicator if user exists
+                        child: SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: LoadingIndicator(
+                            indicatorType: Indicator.lineSpinFadeLoader,
+                            colors: [Colors.white],
+                            strokeWidth: 2,
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )
+               )),
+          ),
         ],
       ),
     );
