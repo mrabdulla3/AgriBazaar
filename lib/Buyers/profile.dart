@@ -10,10 +10,10 @@ class Profile extends StatefulWidget {
   const Profile({super.key, required this.user});
 
   @override
-  _ProfileState createState() => _ProfileState();
+  ProfileState createState() => ProfileState();
 }
 
-class _ProfileState extends State<Profile> {
+class ProfileState extends State<Profile> {
   Map<String, dynamic>? userProfileData;
   bool isEditing = false;
   bool isUploading = false; // Flag to show loading indicator

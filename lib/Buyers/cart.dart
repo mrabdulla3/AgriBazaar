@@ -1,24 +1,67 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Cart extends StatefulWidget {
+  final User? user;
+  const Cart({required this.user, super.key});
   @override
-  _CartState createState() => _CartState();
+  CartState createState() => CartState();
 }
 
-class _CartState extends State<Cart> {
-  int macbookQty = 1;
-  int airpodsQty = 1;
+class CartState extends State<Cart> {
+  List<Map<String, dynamic>> cartProducts = [];
   bool isPickup = false;
-
-  double macbookPrice = 1149.00;
-  double airpodsPrice = 100.00;
   double deliveryCharge = 30.00;
 
   @override
-  Widget build(BuildContext context) {
-    double subtotal = (macbookPrice * macbookQty) + (airpodsPrice * airpodsQty);
-    double total = subtotal + (isPickup ? 0 : deliveryCharge);
+  void initState() {
+    super.initState();
+    getCartItem();
+  }
 
+  Future<void> getCartItem() async {
+    try {
+      QuerySnapshot cartItem = await FirebaseFirestore.instance
+          .collection('carts')
+          .doc(widget.user!.uid)
+          .collection('item')
+          .get();
+
+      setState(() {
+        cartProducts = cartItem.docs.map((doc) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+          // Ensure productPrice is always a double
+          double productPrice = (data['productPrice'] is int)
+              ? (data['productPrice'] as int)
+                  .toDouble() // Convert int to double
+              : (data['productPrice'] as double? ??
+                  0.0); // Use 0.0 if it's null
+
+          return {
+            'productImage': data['productImage'] ?? 'assets/splashImg.jpg',
+            'address': data['address'] ?? '149, Sunset Ave, Los Angeles, CA',
+            'productname': data['productname'] ?? 'Unknown Product',
+            'productPrice': productPrice,
+            'quantity': data['quantity'] is int ? data['quantity'] : 1,
+          };
+        }).toList();
+        print(cartProducts);
+      });
+    } catch (e) {
+      print("Error fetching cart items: $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double subtotal = 0.0;
+    for (var p in cartProducts) {
+      double productPrice = p['productPrice'] * p['quantity'];
+      subtotal += productPrice;
+    }
+    double total = subtotal + (isPickup ? 0 : deliveryCharge);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -26,7 +69,7 @@ class _CartState extends State<Cart> {
           style: TextStyle(color: Colors.black),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: Colors.white,
@@ -57,47 +100,52 @@ class _CartState extends State<Cart> {
   }
 
   Widget _buildCartItems() {
-    return Column(
-      children: [
-        _buildCartItem(
-          imageUrl: 'assets/splashImg.jpg',
-          title: 'Apple Macbook Pro 2020 M1',
-          price: macbookPrice,
-          quantity: macbookQty,
-          onAdd: () {
-            setState(() {
-              macbookQty++;
-            });
-          },
-          onRemove: () {
-            if (macbookQty > 1) {
-              setState(() {
-                macbookQty--;
-              });
-            }
-          },
+    if (cartProducts.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.shopping_cart, size: 100, color: Colors.grey),
+            SizedBox(height: 20),
+            Text(
+              "Your cart is empty",
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey),
+            ),
+          ],
         ),
-        const Divider(),
-        _buildCartItem(
-          imageUrl: 'assets/splashImg.jpg',
-          title: 'Apple Airpods 2020',
-          price: airpodsPrice,
-          quantity: airpodsQty,
-          onAdd: () {
-            setState(() {
-              airpodsQty++;
-            });
-          },
-          onRemove: () {
-            if (airpodsQty > 1) {
-              setState(() {
-                airpodsQty--;
-              });
-            }
-          },
-        ),
-      ],
-    );
+      );
+    } else {
+      return Column(
+        children: cartProducts.map((product) {
+          return Column(
+            children: [
+              _buildCartItem(
+                imageUrl: product['productImage'] ?? 'assets/splashImg.jpg',
+                title: product['productname'] ?? 'Unknown Product',
+                price: product['productPrice'] ?? 0.0,
+                quantity: product['quantity'] ?? 1,
+                onAdd: () {
+                  setState(() {
+                    product['quantity']++;
+                  });
+                },
+                onRemove: () {
+                  if (product['quantity'] > 1) {
+                    setState(() {
+                      product['quantity']--;
+                    });
+                  }
+                },
+              ),
+              const Divider(),
+            ],
+          );
+        }).toList(),
+      );
+    }
   }
 
   Widget _buildCartItem({
@@ -110,7 +158,7 @@ class _CartState extends State<Cart> {
   }) {
     return Row(
       children: [
-        Image.asset(imageUrl, width: 50, height: 50),
+        Image.network(imageUrl, width: 50, height: 50),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
@@ -120,7 +168,7 @@ class _CartState extends State<Cart> {
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text('\$${price.toStringAsFixed(2)}',
+              Text('Rs. $price',
                   style: const TextStyle(fontSize: 14, color: Colors.grey)),
             ],
           ),
@@ -137,6 +185,12 @@ class _CartState extends State<Cart> {
               icon: const Icon(Icons.add_circle_outline, color: Colors.amber),
               onPressed: onAdd,
             ),
+            IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.delete,
+                  color: Color.fromARGB(255, 233, 18, 3),
+                ))
           ],
         ),
       ],
@@ -181,6 +235,13 @@ class _CartState extends State<Cart> {
   }
 
   Widget _buildDeliveryDetails() {
+    if (cartProducts.isEmpty) {
+      return const Center(
+        child: Text("No products in the cart."),
+      );
+    }
+    String address = cartProducts.first['address'];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -192,9 +253,9 @@ class _CartState extends State<Cart> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              "149, Sunset Ave, Los Angeles, CA",
-              style: TextStyle(fontSize: 14),
+            Text(
+              address, // Show the address only once
+              style: const TextStyle(fontSize: 14),
             ),
             GestureDetector(
               onTap: () {
@@ -255,7 +316,7 @@ class _CartState extends State<Cart> {
             ),
           ),
           Text(
-            "\$${amount.toStringAsFixed(2)}",
+            "Rs.${amount.toStringAsFixed(2)}",
             style: TextStyle(
               fontSize: 16,
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
@@ -267,26 +328,18 @@ class _CartState extends State<Cart> {
   }
 
   Widget _buildPaymentButton(double total) {
-    return Container(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          // Implement payment functionality
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.amber,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-        ),
-        child: Text(
-          "Pay \$${total.toStringAsFixed(2)}",
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+    return ElevatedButton(
+      onPressed: () {
+        // Handle payment logic here
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.amber,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+      ),
+      child: Text(
+        "Pay Now Rs. ${total.toStringAsFixed(2)}",
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }
