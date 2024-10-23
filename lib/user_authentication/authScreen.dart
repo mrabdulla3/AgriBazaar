@@ -20,7 +20,7 @@ class _MyHomePageState extends State<MyHomePage> {
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
-      home: AuthScreen(),
+      home: const AuthScreen(),
     );
   }
 }
@@ -40,7 +40,7 @@ class AuthScreenState extends State<AuthScreen> {
       body: Center(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
-          child: isLogin ? SignInPage() : SignUpPage(),
+          child: isLogin ? const SignInPage() : const SignUpPage(),
         ),
       ),
       bottomNavigationBar: Padding(

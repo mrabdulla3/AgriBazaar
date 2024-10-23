@@ -43,7 +43,7 @@ class _SplashscreenState extends State<Splashscreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => AuthScreen(),
+          builder: (context) => const AuthScreen(),
         ),
       );
     }
@@ -82,7 +82,7 @@ class _SplashscreenState extends State<Splashscreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => AuthScreen(),
+              builder: (context) => const AuthScreen(),
             ),
           );
         }
@@ -275,7 +275,7 @@ class _SplashscreenState extends State<Splashscreen> {
                             strokeWidth: 2,
                           ),
                         ),
-               )),
+                      )),
           ),
         ],
       ),

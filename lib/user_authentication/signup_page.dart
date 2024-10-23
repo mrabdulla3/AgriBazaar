@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:agribazar/Buyers/buyers_home.dart';
 import 'package:agribazar/Farmer/farmer_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -234,7 +232,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    TermsAndConditionsPage()));
+                                    const TermsAndConditionsPage()));
                       },
                       child: Text(
                         'Terms & Conditions',
@@ -253,7 +251,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   width: screenWidth * 0.9,
                   height: screenHeight * 0.06,
                   child: isLoading
-                      ? Center(child: CircularProgressIndicator())
+                      ? const Center(child: CircularProgressIndicator())
                       : ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.amber,
