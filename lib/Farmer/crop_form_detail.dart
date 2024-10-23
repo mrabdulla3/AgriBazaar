@@ -11,10 +11,10 @@ class CropDetailsPage extends StatefulWidget {
 
   const CropDetailsPage({required this.cropType, super.key});
   @override
-  _CropDetailsPageState createState() => _CropDetailsPageState();
+  CropDetailsPageState createState() => CropDetailsPageState();
 }
 
-class _CropDetailsPageState extends State<CropDetailsPage> {
+class CropDetailsPageState extends State<CropDetailsPage> {
   File? selectedFile;
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false; // Loading state
@@ -28,7 +28,6 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _farmerAddressController =
       TextEditingController();
-  String category = "Organic"; // Default crop category
 
   @override
   void initState() {
@@ -45,11 +44,11 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
 
       String cropCategory = _cropTypeController.text.trim();
       String cropVariety = _cropVarietyController.text.trim();
-      String cropQuantity = _quantityController.text.trim();
-      String cropPrice = _priceController.text.trim();
+      int cropQuantity = int.tryParse(_quantityController.text.trim()) ?? 0;
+      int cropPrice = int.tryParse(_priceController.text.trim()) ?? 0;
       String feature = _keyFeatureController.text.trim();
       String description = _descriptionController.text.trim();
-      String farmerAddress = _descriptionController.text.trim();
+      String farmerAddress = _farmerAddressController.text.trim();
 
       String categoryDirectory =
           _cropTypeController.text.trim(); // "Organic", "Hybrid", "Inorganic"
@@ -73,7 +72,6 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
           "Variety": cropVariety,
           "Quantity": cropQuantity,
           "Price": cropPrice,
-          "Category": category,
           "Features": feature,
           "Description": description,
           "Crop Image": downloadUrl,
@@ -161,26 +159,15 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
                 ),
                 const SizedBox(height: 16),
                 buildNonEditableTextField("Crop Type*", _cropTypeController),
-                buildTextField("Crop Variety", _cropVarietyController),
-                buildTextField("Quantity *", _quantityController,
-                    inputType: TextInputType.text),
-                buildTextField("Price *", _priceController,
-                    inputType: TextInputType.text),
+                buildTextField("Crop Name", _cropVarietyController),
+                buildTextField("Quantity in kg*", _quantityController,
+                    inputType: TextInputType.number),
+                buildTextField("Price per kg*", _priceController,
+                    inputType: TextInputType.number),
                 const SizedBox(height: 16),
                 buildTextField(
                     "Address: village, city pin.. *", _farmerAddressController,
                     inputType: TextInputType.text),
-                const SizedBox(height: 16),
-                const Text("Category",
-                    style: TextStyle(fontSize: 16, color: Colors.white70)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    buildCategoryButton("Organic", category),
-                    buildCategoryButton("Hybrid", category),
-                    buildCategoryButton("Inorganic", category),
-                  ],
-                ),
                 const SizedBox(height: 16),
                 buildTextField("Ad Title*", _keyFeatureController,
                     hintText: "Mention key features (e.g., type, year, etc.)",
@@ -273,25 +260,6 @@ class _CropDetailsPageState extends State<CropDetailsPage> {
         ),
         const SizedBox(height: 16),
       ],
-    );
-  }
-
-  // Helper method to build category buttons
-  Widget buildCategoryButton(String buttonText, String currentCategory) {
-    return Expanded(
-      child: ElevatedButton(
-        onPressed: () {
-          setState(() {
-            category = buttonText;
-          });
-        },
-        child: Text(buttonText),
-        style: ElevatedButton.styleFrom(
-          backgroundColor:
-              category == buttonText ? const Color(0xFFFDBE42) : Colors.white,
-          foregroundColor: category == buttonText ? Colors.white : Colors.black,
-        ),
-      ),
     );
   }
 }

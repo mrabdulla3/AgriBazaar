@@ -2,6 +2,7 @@ import 'package:agribazar/Farmer/crop_form_detail.dart';
 import 'package:flutter/material.dart';
 
 class CropCategoriesPage extends StatelessWidget {
+  const CropCategoriesPage({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,10 +72,4 @@ class CropCategoriesPage extends StatelessWidget {
       ),
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: CropCategoriesPage(),
-  ));
 }

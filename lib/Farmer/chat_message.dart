@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ChatMessageFarmer extends StatelessWidget {
+  const ChatMessageFarmer({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,13 +94,13 @@ class ChatItem extends StatelessWidget {
   final String imageUrl;
 
   const ChatItem({
-    Key? key,
+    super.key,
     required this.name,
     required this.message,
     required this.time,
     required this.isRead,
     required this.imageUrl,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +110,7 @@ class ChatItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 8.0,
@@ -130,7 +131,7 @@ class ChatItem extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -148,7 +149,7 @@ class ChatItem extends StatelessWidget {
           ),
           Text(
             time,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black54,
               fontSize: 12,
             ),

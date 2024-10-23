@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class NotificationsFarmer extends StatelessWidget {
-  const NotificationsFarmer({Key? key}) : super(key: key);
+  const NotificationsFarmer({super.key});
 
   @override
   Widget build(BuildContext context) {

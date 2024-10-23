@@ -10,10 +10,10 @@ class ProfileFarmer extends StatefulWidget {
   const ProfileFarmer({super.key, required this.user});
 
   @override
-  _ProfileFarmerState createState() => _ProfileFarmerState();
+  ProfileFarmerState createState() => ProfileFarmerState();
 }
 
-class _ProfileFarmerState extends State<ProfileFarmer> {
+class ProfileFarmerState extends State<ProfileFarmer> {
   Map<String, dynamic>? userProfileData;
   bool isEditing = false;
   bool isUploading = false; // Flag to show loading indicator

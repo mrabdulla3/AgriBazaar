@@ -249,7 +249,7 @@ class _SellerDashboardState extends State<SellerDashboard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => NotificationsFarmer(),
+                      builder: (context) => const NotificationsFarmer(),
                     ));
               },
             ),
@@ -257,7 +257,7 @@ class _SellerDashboardState extends State<SellerDashboard> {
           ),
           BottomNavigationBarItem(
             icon: IconButton(
-              icon: Icon(Icons.person),
+              icon: const Icon(Icons.person),
               onPressed: () {
                 Navigator.push(
                     context,
