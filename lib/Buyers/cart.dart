@@ -32,14 +32,12 @@ class CartState extends State<Cart> {
         cartProducts = cartItem.docs.map((doc) {
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-          // Ensure productPrice is always a double
           double productPrice = (data['productPrice'] is int)
-              ? (data['productPrice'] as int)
-                  .toDouble() // Convert int to double
-              : (data['productPrice'] as double? ??
-                  0.0); // Use 0.0 if it's null
+              ? (data['productPrice'] as int).toDouble()
+              : (data['productPrice'] as double? ?? 0.0);
 
           return {
+            'documentId': doc.id,
             'productImage': data['productImage'] ?? 'assets/splashImg.jpg',
             'address': data['address'] ?? '149, Sunset Ave, Los Angeles, CA',
             'productname': data['productname'] ?? 'Unknown Product',
@@ -47,10 +45,31 @@ class CartState extends State<Cart> {
             'quantity': data['quantity'] is int ? data['quantity'] : 1,
           };
         }).toList();
-        print(cartProducts);
       });
     } catch (e) {
       print("Error fetching cart items: $e");
+    }
+  }
+
+  void removeCartItem(int index) async {
+    try {
+      String docId = cartProducts[index]['documentId'];
+      await FirebaseFirestore.instance
+          .collection('carts')
+          .doc(widget.user!.uid)
+          .collection('item')
+          .doc(docId)
+          .delete();
+
+      setState(() {
+        cartProducts.removeAt(index);
+      });
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Cart item removed')));
+    } catch (e) {
+      print("Error deleting cart item: $e");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Failed to remove item')));
     }
   }
 
@@ -62,6 +81,7 @@ class CartState extends State<Cart> {
       subtotal += productPrice;
     }
     double total = subtotal + (isPickup ? 0 : deliveryCharge);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -119,10 +139,13 @@ class CartState extends State<Cart> {
       );
     } else {
       return Column(
-        children: cartProducts.map((product) {
+        children: cartProducts.asMap().entries.map((entry) {
+          int index = entry.key;
+          var product = entry.value;
           return Column(
             children: [
               _buildCartItem(
+                index: index, // Pass index here
                 imageUrl: product['productImage'] ?? 'assets/splashImg.jpg',
                 title: product['productname'] ?? 'Unknown Product',
                 price: product['productPrice'] ?? 0.0,
@@ -149,6 +172,7 @@ class CartState extends State<Cart> {
   }
 
   Widget _buildCartItem({
+    required int index, // Add index parameter
     required String imageUrl,
     required String title,
     required double price,
@@ -158,7 +182,10 @@ class CartState extends State<Cart> {
   }) {
     return Row(
       children: [
-        Image.network(imageUrl, width: 50, height: 50),
+        Image.network(imageUrl, width: 50, height: 50,
+            errorBuilder: (context, error, stackTrace) {
+          return Image.asset('assets/splashImg.jpg', width: 50, height: 50);
+        }),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
@@ -186,11 +213,14 @@ class CartState extends State<Cart> {
               onPressed: onAdd,
             ),
             IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.delete,
-                  color: Color.fromARGB(255, 233, 18, 3),
-                ))
+              onPressed: () {
+                removeCartItem(index); // Pass index here for deletion
+              },
+              icon: const Icon(
+                Icons.delete,
+                color: Color.fromARGB(255, 233, 18, 3),
+              ),
+            ),
           ],
         ),
       ],
@@ -254,7 +284,7 @@ class CartState extends State<Cart> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              address, // Show the address only once
+              address,
               style: const TextStyle(fontSize: 14),
             ),
             GestureDetector(
@@ -293,37 +323,44 @@ class CartState extends State<Cart> {
 
   Widget _buildPriceDetails(double subtotal, double total) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPriceRow("Subtotal", subtotal),
-        _buildPriceRow("Delivery", isPickup ? 0 : deliveryCharge),
-        const Divider(),
-        _buildPriceRow("Total", total, isBold: true),
+        const Text(
+          "Price Details",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("Subtotal"),
+            Text("Rs. ${subtotal.toStringAsFixed(2)}"),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (!isPickup)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Delivery Charge"),
+              Text("Rs. ${deliveryCharge.toStringAsFixed(2)}"),
+            ],
+          ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Total",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              "Rs. ${total.toStringAsFixed(2)}",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ],
-    );
-  }
-
-  Widget _buildPriceRow(String title, double amount, {bool isBold = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-          Text(
-            "Rs.${amount.toStringAsFixed(2)}",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
