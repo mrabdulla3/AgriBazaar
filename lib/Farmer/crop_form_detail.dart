@@ -20,7 +20,7 @@ class CropDetailsPageState extends State<CropDetailsPage> {
   bool isLoading = false; // Loading state
 
   // Controllers for input fields
-  final TextEditingController _cropTypeController = TextEditingController();
+  final TextEditingController _cropCategoryController = TextEditingController();
   final TextEditingController _cropVarietyController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
@@ -32,7 +32,7 @@ class CropDetailsPageState extends State<CropDetailsPage> {
   @override
   void initState() {
     super.initState();
-    _cropTypeController.text =
+    _cropCategoryController.text =
         widget.cropType; // Set the cropType passed from the previous screen
   }
 
@@ -42,7 +42,7 @@ class CropDetailsPageState extends State<CropDetailsPage> {
         isLoading = true; // Start loading when the form is being saved
       });
 
-      String cropCategory = _cropTypeController.text.trim();
+      String cropCategory = _cropCategoryController.text.trim();
       String cropVariety = _cropVarietyController.text.trim();
       int cropQuantity = int.tryParse(_quantityController.text.trim()) ?? 0;
       int cropPrice = int.tryParse(_priceController.text.trim()) ?? 0;
@@ -50,14 +50,11 @@ class CropDetailsPageState extends State<CropDetailsPage> {
       String description = _descriptionController.text.trim();
       String farmerAddress = _farmerAddressController.text.trim();
 
-      String categoryDirectory =
-          _cropTypeController.text.trim(); // "Organic", "Hybrid", "Inorganic"
-
       // Create a unique file name using UUID
       String uniqueFileName = const Uuid().v1();
 
       // Construct the path to store the image inside the category directory
-      String filePath = '$categoryDirectory/$uniqueFileName';
+      String filePath = '$cropCategory/$uniqueFileName';
 
       if (selectedFile != null) {
         UploadTask uploadTask = FirebaseStorage.instance
@@ -93,7 +90,7 @@ class CropDetailsPageState extends State<CropDetailsPage> {
       }
 
       // Clearing fields after form submission
-      _cropTypeController.clear();
+      _cropCategoryController.clear();
       _cropVarietyController.clear();
       _quantityController.clear();
       _priceController.clear();
@@ -158,7 +155,8 @@ class CropDetailsPageState extends State<CropDetailsPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                buildNonEditableTextField("Crop Type*", _cropTypeController),
+                buildNonEditableTextField(
+                    "Crop Type*", _cropCategoryController),
                 buildTextField("Crop Name", _cropVarietyController),
                 buildTextField("Quantity in kg*", _quantityController,
                     inputType: TextInputType.number),
