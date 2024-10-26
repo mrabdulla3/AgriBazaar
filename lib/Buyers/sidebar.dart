@@ -7,17 +7,13 @@ import 'package:google_fonts/google_fonts.dart';
 class Sidebar extends StatefulWidget {
   final User? user;
   const Sidebar({required this.user, super.key});
+
   @override
   State<Sidebar> createState() => _SidebarState();
 }
 
 class _SidebarState extends State<Sidebar> {
   Map<String, dynamic>? userProfileData;
-  @override
-  void initState() {
-    super.initState();
-    _getUserInfo();
-  }
 
   Future<void> _getUserInfo() async {
     try {
@@ -37,45 +33,65 @@ class _SidebarState extends State<Sidebar> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _getUserInfo();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    //double screenHeight = MediaQuery.of(context).size.height / 2.1;
+    double screenHeight = MediaQuery.of(context).size.height / 2.1;
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           SizedBox(
-            height: 230,
-            child: DrawerHeader(
-                child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: userProfileData != null &&
-                          userProfileData!['profileImageUrl'] != null
-                      ? NetworkImage(userProfileData!['profileImageUrl'])
-                          as ImageProvider
-                      : null, // If image doesn't exist, show icon instead
-                  child: userProfileData == null ||
-                          userProfileData!['profileImageUrl'] == null
-                      ? const Icon(Icons.person,
-                          size: 35) // Show person icon if no image
-                      : null,
-                ),
-                Text(
-                  userProfileData!['name'] ?? widget.user!.displayName,
-                  style: GoogleFonts.abrilFatface(
-                    textStyle: const TextStyle(fontSize: 20, letterSpacing: .5),
+            height: screenHeight * 0.65,
+            child: userProfileData == null
+                ? const Center(
+                    child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : DrawerHeader(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: userProfileData != null &&
+                                  userProfileData!['profileImageUrl'] != null
+                              ? NetworkImage(
+                                      userProfileData!['profileImageUrl'])
+                                  as ImageProvider
+                              : null,
+                          child: (userProfileData == null ||
+                                  userProfileData!['profileImageUrl'] == null)
+                              ? const Icon(Icons.person, size: 35)
+                              : null,
+                        ),
+                        Text(
+                          userProfileData!['name'] ??
+                              widget.user!.displayName ??
+                              '',
+                          style: GoogleFonts.abrilFatface(
+                            textStyle: const TextStyle(
+                                fontSize: 20, letterSpacing: .5),
+                          ),
+                        ),
+                        Text(
+                          widget.user!.email ?? "No email available",
+                          style: GoogleFonts.aBeeZee(
+                            textStyle: const TextStyle(
+                                fontSize: 20, letterSpacing: .5),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Text(
-                  widget.user!.email ?? "",
-                  style: GoogleFonts.aBeeZee(
-                    textStyle: const TextStyle(fontSize: 20, letterSpacing: .5),
-                  ),
-                ),
-              ],
-            )),
           ),
           ListTile(
               leading: const Icon(Icons.feedback_outlined),

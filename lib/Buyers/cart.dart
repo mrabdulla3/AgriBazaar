@@ -67,7 +67,7 @@ class CartState extends State<Cart> {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Cart item removed')));
     } catch (e) {
-      print("Error deleting cart item: $e");
+      //print("Error deleting cart item: $e");
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Failed to remove item')));
     }
