@@ -1,3 +1,4 @@
+import 'package:agribazar/Buyers/addressForm.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -89,7 +90,8 @@ class CartState extends State<Cart> {
           style: TextStyle(color: Colors.black),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: Colors.white,
@@ -180,49 +182,66 @@ class CartState extends State<Cart> {
     required VoidCallback onAdd,
     required VoidCallback onRemove,
   }) {
-    return Row(
+    //double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+    return Column(
       children: [
-        Image.network(imageUrl, width: 50, height: 50,
-            errorBuilder: (context, error, stackTrace) {
-          return Image.asset('assets/splashImg.jpg', width: 50, height: 50);
-        }),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text('Rs. $price',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey)),
-            ],
-          ),
-        ),
         Row(
           children: [
-            IconButton(
-              icon:
-                  const Icon(Icons.remove_circle_outline, color: Colors.amber),
-              onPressed: onRemove,
-            ),
-            Text(quantity.toString(), style: const TextStyle(fontSize: 16)),
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline, color: Colors.amber),
-              onPressed: onAdd,
-            ),
-            IconButton(
-              onPressed: () {
-                removeCartItem(index); // Pass index here for deletion
-              },
-              icon: const Icon(
-                Icons.delete,
-                color: Color.fromARGB(255, 233, 18, 3),
+            Image.network(imageUrl, width: 50, height: 50,
+                errorBuilder: (context, error, stackTrace) {
+              return Image.asset('assets/splashImg.jpg', width: 50, height: 50);
+            }),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text('Rs. $price',
+                      style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                ],
               ),
+            ),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.remove_circle_outline,
+                      color: Colors.amber),
+                  onPressed: onRemove,
+                ),
+                Text(quantity.toString(), style: const TextStyle(fontSize: 16)),
+                IconButton(
+                  icon:
+                      const Icon(Icons.add_circle_outline, color: Colors.amber),
+                  onPressed: onAdd,
+                ),
+              ],
             ),
           ],
         ),
+        const SizedBox(
+          height: 15,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(
+                width: screenWidth * 0.45,
+                child: OutlinedButton(
+                    onPressed: () {
+                      removeCartItem(index);
+                    },
+                    child: const Text('Remove'))),
+            SizedBox(
+                width: screenWidth * 0.45,
+                child: OutlinedButton(
+                    onPressed: () {}, child: const Text('Order Now')))
+          ],
+        )
       ],
     );
   }
@@ -287,15 +306,6 @@ class CartState extends State<Cart> {
               address,
               style: const TextStyle(fontSize: 14),
             ),
-            GestureDetector(
-              onTap: () {
-                // Implement edit address functionality
-              },
-              child: const Text(
-                "Edit",
-                style: TextStyle(color: Colors.blue, fontSize: 14),
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -310,10 +320,19 @@ class CartState extends State<Cart> {
               onTap: () {
                 // Implement edit delivery option functionality
               },
-              child: const Text(
-                "Edit",
-                style: TextStyle(color: Colors.blue, fontSize: 14),
-              ),
+              child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EditAddressPage(user: widget.user!),
+                        ));
+                  },
+                  child: const Text(
+                    'Edit',
+                    style: TextStyle(color: Colors.blue),
+                  )),
             ),
           ],
         ),

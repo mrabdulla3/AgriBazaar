@@ -77,11 +77,26 @@ class ChatScreenState extends State<ChatScreen> {
     try {
       String msg = _messageController.text.trim();
       if (msg.isNotEmpty) {
-        await FirebaseFirestore.instance
+        // Check if the chat room document exists
+        DocumentReference chatRoomRef = FirebaseFirestore.instance
             .collection('chatMessages')
-            .doc(widget.chatRoomId)
-            .collection('messages')
-            .add({
+            .doc(widget.chatRoomId);
+
+        DocumentSnapshot chatRoomSnapshot = await chatRoomRef.get();
+
+        // If the document does not exist, create it
+        if (!chatRoomSnapshot.exists) {
+          await chatRoomRef.set({
+            'created_at': FieldValue.serverTimestamp(),
+            'participants': [
+              FirebaseAuth.instance.currentUser!.uid,
+              widget.userId
+            ],
+          });
+        }
+
+        // Now add the message to the messages subcollection
+        await chatRoomRef.collection('messages').add({
           'senderId': FirebaseAuth.instance.currentUser!.uid,
           'message': msg,
           'time': DateTime.now(),

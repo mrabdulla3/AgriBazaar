@@ -125,34 +125,43 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
   // Fetch messages from each chat room
   Future<List<ChatMessage>> _fetchMessagesForChatRooms(
       List<QueryDocumentSnapshot> filteredRooms) async {
-    List<ChatMessage> messages = [];
+    List<ChatMessage> uniqueMessages = [];
 
     for (var room in filteredRooms) {
-      // Get messages from the specific chat room
       QuerySnapshot messageSnapshot = await FirebaseFirestore.instance
           .collection('chatMessages')
-          .doc(room.id) // Use the room ID
+          .doc(room.id)
           .collection('messages')
           .where('senderId', isNotEqualTo: buyerId)
           .get();
 
+      // Map to store latest message per senderId
+      Map<String, ChatMessage> latestMessagesBySender = {};
+
       for (var m in messageSnapshot.docs) {
         var data = m.data() as Map<String, dynamic>;
-        // print(data);
-        messages.add(ChatMessage(
-          username: data['senderName'] ?? 'Unknown Buyer',
-          message: data['message'] ?? 'No message content',
-          time: data['time'] ?? Timestamp.now(),
-          isRead: data['isRead'] ?? false,
-          buyerImageUrl:
-              data['senderProfilePic'] ?? 'https://via.placeholder.com/150',
-          senderId: data['senderId'] ?? 'Unknown',
-          chatRoomId: room.id, // Include the room ID as chatRoomId
-        ));
+        String senderId = data['senderId'];
+
+        // If senderId is not yet in the map, add the latest message
+        if (!latestMessagesBySender.containsKey(senderId)) {
+          latestMessagesBySender[senderId] = ChatMessage(
+            username: data['senderName'] ?? 'Unknown Buyer',
+            message: data['message'] ?? 'No message content',
+            time: data['time'] ?? Timestamp.now(),
+            isRead: data['isRead'] ?? false,
+            buyerImageUrl:
+                data['senderProfilePic'] ?? 'https://via.placeholder.com/150',
+            senderId: senderId,
+            chatRoomId: room.id,
+          );
+        }
       }
+
+      // Add unique messages from the current room to the main list
+      uniqueMessages.addAll(latestMessagesBySender.values);
     }
 
-    return messages;
+    return uniqueMessages;
   }
 
   // Helper function to format the timestamp

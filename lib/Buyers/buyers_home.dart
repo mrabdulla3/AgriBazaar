@@ -1,15 +1,17 @@
 import 'package:agribazar/Buyers/cart.dart';
 import 'package:agribazar/Buyers/category.dart';
-import 'package:agribazar/Buyers/chat_message.dart';
+import 'package:agribazar/Buyers/chat_userList.dart';
 import 'package:agribazar/Buyers/detailed_page.dart';
 import 'package:agribazar/Buyers/notification.dart';
 import 'package:agribazar/Buyers/pricing.dart';
 import 'package:agribazar/Buyers/profile.dart';
+import 'package:agribazar/Buyers/search_product.dart';
 import 'package:agribazar/Buyers/sidebar.dart';
 import 'package:agribazar/user_authentication/signup_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MarketHomePage extends StatefulWidget {
   final User? user;
@@ -25,6 +27,9 @@ class _MarketHomePageState extends State<MarketHomePage> {
   bool isLoading = true;
   String errorMessage = '';
   int cartItemCount = 0; // Add a cart item count
+  TextEditingController searchController = TextEditingController();
+  List<Map<String, dynamic>> searchResult = [];
+  bool isSearching = false;
 
   Future<void> _getCrops() async {
     try {
@@ -82,6 +87,32 @@ class _MarketHomePageState extends State<MarketHomePage> {
     _getCrops();
   }
 
+  void searchQuery(String val) {
+    if (featuredProducts.isNotEmpty && val.isNotEmpty) {
+      setState(() {
+        searchResult = featuredProducts.where((product) {
+          final cropName = product['Variety'].toString().toLowerCase();
+          return cropName.contains(val.toLowerCase());
+        }).toList();
+      });
+
+      if (searchResult.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                SearchProduct(user: widget.user, searchedList: searchResult),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No results found for "$val"')),
+        );
+      }
+    }
+    searchController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -89,7 +120,12 @@ class _MarketHomePageState extends State<MarketHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AgriBazaar'),
+        title: Text(
+          'AgriBazaar',
+          style: GoogleFonts.abrilFatface(
+            textStyle: const TextStyle(fontSize: 18, letterSpacing: .5),
+          ),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
@@ -98,7 +134,7 @@ class _MarketHomePageState extends State<MarketHomePage> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ChatMessage(),
+                    builder: (context) => const ChatMessageBuyer(),
                   ));
             },
           ),
@@ -123,24 +159,41 @@ class _MarketHomePageState extends State<MarketHomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search bar
+              // Search bar with a button
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
+                height: 45,
+                padding: const EdgeInsets.symmetric(horizontal: 5),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(
                       color: const Color.fromARGB(255, 113, 109, 109),
-                      width: 2),
+                      width: 1),
                 ),
-                child: const TextField(
+                child: TextField(
+                  controller: searchController,
+                  onSubmitted: (value) {
+                    searchQuery(value);
+                  },
                   decoration: InputDecoration(
                     hintText: "Search...",
+                    hintStyle: GoogleFonts.abhayaLibre(
+                      textStyle: const TextStyle(
+                          fontSize: 16,
+                          letterSpacing: .5,
+                          fontWeight: FontWeight.w600),
+                    ),
                     border: InputBorder.none,
-                    icon: Icon(Icons.search, color: Colors.black),
+                    prefixIcon: IconButton(
+                      icon: const Icon(Icons.search, color: Colors.black),
+                      onPressed: () {
+                        searchQuery(searchController.text);
+                      },
+                    ),
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
               SizedBox(height: screenHeight * 0.03),
 
               // Top banner image
@@ -156,9 +209,14 @@ class _MarketHomePageState extends State<MarketHomePage> {
               SizedBox(height: screenHeight * 0.02),
 
               // Category section
-              const Text(
+              Text(
                 "Category",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: GoogleFonts.aboreto(
+                  textStyle: const TextStyle(
+                      fontSize: 18,
+                      letterSpacing: .5,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
               const SizedBox(height: 10),
               Row(
@@ -168,14 +226,20 @@ class _MarketHomePageState extends State<MarketHomePage> {
                   buildCategoryItem("Fruits", 'assets/fruits.jpg'),
                   buildCategoryItem("Rice", 'assets/rice.jpg'),
                   buildCategoryItem("Wheat", 'assets/Wheat.jpg'),
+                  buildCategoryItem("Maize", 'assets/maize.jpg'),
                 ],
               ),
               SizedBox(height: screenHeight * 0.03),
 
               // Featured Products section with GridView
-              const Text(
+              Text(
                 "Featured Products",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: GoogleFonts.aboreto(
+                  textStyle: const TextStyle(
+                      fontSize: 18,
+                      letterSpacing: .5,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
               const SizedBox(height: 10),
 
@@ -320,7 +384,13 @@ class _MarketHomePageState extends State<MarketHomePage> {
           ),
         ),
         const SizedBox(height: 5),
-        Text(title),
+        Text(
+          title,
+          style: GoogleFonts.aboreto(
+            textStyle: const TextStyle(
+                fontSize: 10, letterSpacing: .5, fontWeight: FontWeight.bold),
+          ),
+        ),
       ],
     );
   }
@@ -339,75 +409,76 @@ class _MarketHomePageState extends State<MarketHomePage> {
                       productId: productId,
                     )));
       },
-      child: Expanded(
-        child: Card(
-          elevation: 8, // Adds shadow intensity
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15), // Rounded corners
-          ),
-          shadowColor: Colors.black.withOpacity(0.5), // Shadow color
-          margin: const EdgeInsets.all(10), // Adds some margin around the card
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(15),
-                  topRight: Radius.circular(15),
-                ),
-                child: Image.network(
-                  imageUrl,
-                  height: screenHeight * 0.13,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Icon(
-                        Icons.error,
-                        size: 80,
-                        color: Colors.red,
-                      ),
-                    ); // Handle error if image fails to load
-                  },
+      child: Card(
+        elevation: 8, // Adds shadow intensity
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15), // Rounded corners
+        ),
+        shadowColor: Colors.black.withOpacity(0.5), // Shadow color
+        margin: const EdgeInsets.all(10), // Adds some margin around the card
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
+              ),
+              child: Image.network(
+                imageUrl,
+                height: screenHeight * 0.13,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(
+                    child: Icon(
+                      Icons.error,
+                      size: 80,
+                      color: Colors.red,
+                    ),
+                  ); // Handle error if image fails to load
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 10, right: 10),
+              child: Text(
+                name,
+                style: GoogleFonts.abhayaLibre(
+                  textStyle: const TextStyle(
+                      fontSize: 19,
+                      letterSpacing: .5,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 10, right: 10),
-                child: Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '$price /kg',
+                    style: GoogleFonts.abhayaLibre(
+                        textStyle: const TextStyle(
+                            fontSize: 19,
+                            letterSpacing: .5,
+                            fontWeight: FontWeight.w600),
+                        color: const Color.fromARGB(255, 64, 176, 68)),
                   ),
-                ),
+                  IconButton(
+                    icon: const Icon(Icons.add_circle_outline,
+                        color: Colors.brown),
+                    onPressed: () {
+                      // Add to cart or handle other functionality
+                      addCartItem(productId, name, price, imageUrl, address);
+                    },
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '$price /kg',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add_circle_outline,
-                          color: Colors.brown),
-                      onPressed: () {
-                        // Add to cart or handle other functionality
-                        addCartItem(productId, name, price, imageUrl, address);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-            ],
-          ),
+            ),
+            const SizedBox(height: 10),
+          ],
         ),
       ),
     );

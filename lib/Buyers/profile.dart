@@ -121,7 +121,7 @@ class ProfileState extends State<Profile> {
       appBar: AppBar(
         backgroundColor: Colors.amber,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
             Navigator.of(context).pop();
           },

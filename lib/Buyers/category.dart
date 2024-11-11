@@ -87,7 +87,8 @@ class _CategorysState extends State<Categorys> {
           ),
           backgroundColor: Colors.white,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.black),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -164,75 +165,73 @@ Widget buildFeaturedProduct(BuildContext context, String name, String imageUrl,
                     productId: productId,
                   )));
     },
-    child: Expanded(
-      child: Card(
-        elevation: 8, // Adds shadow intensity
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15), // Rounded corners
-        ),
-        shadowColor: Colors.black.withOpacity(0.5), // Shadow color
-        margin: const EdgeInsets.all(10), // Adds some margin around the card
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(15),
-                topRight: Radius.circular(15),
-              ),
-              child: Image.network(
-                imageUrl,
-                height: screenHeight * 0.15,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Center(
-                    child: Icon(
-                      Icons.error,
-                      size: 80,
-                      color: Colors.red,
-                    ),
-                  ); // Handle error if image fails to load
-                },
+    child: Card(
+      elevation: 8, // Adds shadow intensity
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15), // Rounded corners
+      ),
+      shadowColor: Colors.black.withOpacity(0.5), // Shadow color
+      margin: const EdgeInsets.all(10), // Adds some margin around the card
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(15),
+              topRight: Radius.circular(15),
+            ),
+            child: Image.network(
+              imageUrl,
+              height: screenHeight * 0.15,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                  child: Icon(
+                    Icons.error,
+                    size: 80,
+                    color: Colors.red,
+                  ),
+                ); // Handle error if image fails to load
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10),
+            child: Text(
+              name,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, right: 10),
-              child: Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '$price /kg',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
+                IconButton(
+                  icon:
+                      const Icon(Icons.add_circle_outline, color: Colors.brown),
+                  onPressed: () {
+                    // Add to cart or handle other functionality
+                    //addCartItem(productId, name, price, imageUrl, address);
+                  },
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '$price /kg',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.add_circle_outline,
-                        color: Colors.brown),
-                    onPressed: () {
-                      // Add to cart or handle other functionality
-                      //addCartItem(productId, name, price, imageUrl, address);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
-        ),
+          ),
+          const SizedBox(height: 10),
+        ],
       ),
     ),
   );
