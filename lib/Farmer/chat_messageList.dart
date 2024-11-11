@@ -46,18 +46,11 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  // for (var doc in snapshot.data!.docs) {
-                  //   print("Doc ID from Firestore: ${doc.id}");
-                  //   if (doc.id.contains(farmerId)) {
-                  //     print("Match found for current user ID: ${doc.id}");
-                  //   }
-                  // }
                   // Filter chat room documents where the document ID ends with farmerId
                   final filteredRooms = snapshot.data!.docs.where((doc) {
                     return doc.id.endsWith(farmerId);
                   }).toList();
-                  //  print("FilteredLis length:${filteredRooms.length}");
-                  // Check if filtered rooms are empty
+
                   if (filteredRooms.isEmpty) {
                     return const Center(
                       child: Column(
@@ -99,9 +92,8 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
                             time: formatTime(message.time),
                             isRead: message.isRead,
                             imageUrl: message.buyerImageUrl,
-                            senderId: message.senderId, // Pass senderId here
-                            chatRoomId: message
-                                .chatRoomId, // Ensure chatRoomId is included
+                            senderId: message.senderId,
+                            chatRoomId: message.chatRoomId,
                           );
                         }).toList(),
                       );
@@ -116,50 +108,58 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
     );
   }
 
-  // Fetch messages from each chat room
+  // Fetch messages from each chat room and keep only the latest message from each senderId
   Future<List<ChatMessage>> _fetchMessagesForChatRooms(
       List<QueryDocumentSnapshot> filteredRooms) async {
-    List<ChatMessage> messages = [];
+    List<ChatMessage> uniqueMessages = [];
 
     for (var room in filteredRooms) {
-      // Get messages from the specific chat room
       QuerySnapshot messageSnapshot = await FirebaseFirestore.instance
           .collection('chatMessages')
-          .doc(room.id) // Use the room ID
+          .doc(room.id)
           .collection('messages')
           .where('senderId', isNotEqualTo: farmerId)
           .get();
 
+      // Map to store latest message per senderId
+      Map<String, ChatMessage> latestMessagesBySender = {};
+
       for (var m in messageSnapshot.docs) {
         var data = m.data() as Map<String, dynamic>;
-        // print(data);
-        messages.add(ChatMessage(
-          username: data['senderName'] ?? 'Unknown Buyer',
-          message: data['message'] ?? 'No message content',
-          time: data['time'] ?? Timestamp.now(),
-          isRead: data['isRead'] ?? false,
-          buyerImageUrl:
-              data['senderProfilePic'] ?? 'https://via.placeholder.com/150',
-          senderId: data['senderId'] ?? 'Unknown',
-          chatRoomId: room.id, // Include the room ID as chatRoomId
-        ));
+        String senderId = data['senderId'];
+
+        // If senderId is not yet in the map, add the latest message
+        if (!latestMessagesBySender.containsKey(senderId)) {
+          latestMessagesBySender[senderId] = ChatMessage(
+            username: data['senderName'] ?? 'Unknown Buyer',
+            message: data['message'] ?? 'No message content',
+            time: data['time'] ?? Timestamp.now(),
+            isRead: data['isRead'] ?? false,
+            buyerImageUrl:
+                data['senderProfilePic'] ?? 'https://via.placeholder.com/150',
+            senderId: senderId,
+            chatRoomId: room.id,
+          );
+        }
       }
+
+      // Add unique messages from the current room to the main list
+      uniqueMessages.addAll(latestMessagesBySender.values);
     }
 
-    return messages;
+    return uniqueMessages;
   }
 
   // Helper function to format the timestamp
   String formatTime(dynamic timestamp) {
     if (timestamp == null) {
-      return "No Time"; // Placeholder text if timestamp is missing
+      return "No Time";
     }
-
     try {
       DateTime dateTime = (timestamp as Timestamp).toDate();
       return "${dateTime.hour}:${dateTime.minute}";
     } catch (e) {
-      return "Invalid Time"; // Fallback if the conversion fails
+      return "Invalid Time";
     }
   }
 }
@@ -167,11 +167,11 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
 class ChatMessage {
   final String username;
   final String message;
-  final dynamic time; // Change to dynamic for flexibility
+  final dynamic time;
   final bool isRead;
   final String buyerImageUrl;
-  final String senderId; // Add senderId
-  final String chatRoomId; // Add chatRoomId
+  final String senderId;
+  final String chatRoomId;
 
   ChatMessage({
     required this.username,
@@ -180,7 +180,7 @@ class ChatMessage {
     required this.isRead,
     required this.buyerImageUrl,
     required this.senderId,
-    required this.chatRoomId, // Include chatRoomId in constructor
+    required this.chatRoomId,
   });
 }
 
@@ -191,7 +191,7 @@ class ChatItem extends StatelessWidget {
   final bool isRead;
   final String imageUrl;
   final String senderId;
-  final String chatRoomId; // Include chatRoomId
+  final String chatRoomId;
 
   const ChatItem({
     super.key,
@@ -201,22 +201,19 @@ class ChatItem extends StatelessWidget {
     required this.isRead,
     required this.imageUrl,
     required this.senderId,
-    required this.chatRoomId, // Include chatRoomId in constructor
+    required this.chatRoomId,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Ensure to navigate with the correct userId and chatRoomId
-        //print(senderId);
-        //print(chatRoomId);
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ChatScreen(
-              userId: senderId, // Pass senderId directly
-              chatRoomId: chatRoomId, // Use the correct chatRoomId
+              userId: senderId,
+              chatRoomId: chatRoomId,
             ),
           ),
         );

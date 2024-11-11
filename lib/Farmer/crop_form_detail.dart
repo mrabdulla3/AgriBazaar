@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CropDetailsPage extends StatefulWidget {
   final String cropType;
@@ -63,6 +64,8 @@ class CropDetailsPageState extends State<CropDetailsPage> {
             .putFile(selectedFile!);
         TaskSnapshot taskSnapshot = await uploadTask;
         String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+        User? currentUser = FirebaseAuth.instance.currentUser;
+        String? userId = currentUser?.uid;
 
         Map<String, dynamic> cropForm = {
           "cropType": cropCategory,
@@ -72,7 +75,8 @@ class CropDetailsPageState extends State<CropDetailsPage> {
           "Features": feature,
           "Description": description,
           "Crop Image": downloadUrl,
-          "Address": farmerAddress
+          "Address": farmerAddress,
+          "userId": userId
         };
 
         await FirebaseFirestore.instance
