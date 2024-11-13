@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -19,6 +20,7 @@ class CropDetailsPageState extends State<CropDetailsPage> {
   File? selectedFile;
   final _formKey = GlobalKey<FormState>();
   bool isLoading = false; // Loading state
+  var logger = Logger();
 
   // Controllers for input fields
   final TextEditingController _cropCategoryController = TextEditingController();
@@ -84,9 +86,11 @@ class CropDetailsPageState extends State<CropDetailsPage> {
             .add(cropForm);
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Form submitted successfully!')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Form submitted successfully!')),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select an image.')),
@@ -117,7 +121,13 @@ class CropDetailsPageState extends State<CropDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Include Crop Details"),
+        title: Text(
+          "Include Crop Details",
+          style: GoogleFonts.abhayaLibre(
+            textStyle: const TextStyle(
+                fontSize: 22, letterSpacing: .5, fontWeight: FontWeight.w700),
+          ),
+        ),
         backgroundColor: const Color(0xFFFDBE42),
       ),
       body: Padding(
@@ -136,10 +146,10 @@ class CropDetailsPageState extends State<CropDetailsPage> {
                     if (image != null) {
                       setState(() {
                         selectedFile = File(image.path);
-                        print("Image Selected!");
+                        logger.d("Image Selected!");
                       });
                     } else {
-                      print("Image not Selected!");
+                      logger.d("Image not Selected!");
                     }
                   },
                   child: Container(
@@ -222,7 +232,6 @@ class CropDetailsPageState extends State<CropDetailsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white70)),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,

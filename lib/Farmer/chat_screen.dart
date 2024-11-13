@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:logger/logger.dart';
 
 class ChatScreenFarmer extends StatefulWidget {
   final String? chatRoomId;
   final String? userId;
+
   const ChatScreenFarmer(
       {required this.userId, required this.chatRoomId, super.key});
 
@@ -15,6 +18,7 @@ class ChatScreenFarmer extends StatefulWidget {
 class ChatScreenState extends State<ChatScreenFarmer> {
   final TextEditingController _messageController = TextEditingController();
   Map<String, dynamic>? userProfileData;
+  var logger = Logger();
 
   @override
   void initState() {
@@ -38,7 +42,7 @@ class ChatScreenState extends State<ChatScreenFarmer> {
       }
       // print(userProfileData);
     } catch (e) {
-      print('Error fetching user profile data: $e');
+      logger.e('Error fetching user profile data: $e');
     }
   }
 
@@ -81,7 +85,7 @@ class ChatScreenState extends State<ChatScreenFarmer> {
         });
       }
     } catch (e) {
-      print('Error sending message: $e');
+      logger.e('Error sending message: $e');
     }
   }
 
@@ -103,7 +107,12 @@ class ChatScreenState extends State<ChatScreenFarmer> {
             Expanded(
               child: Text(
                 userProfileData!['name'] ?? "Chat Room",
-                style: const TextStyle(fontSize: 18),
+                style: GoogleFonts.abhayaLibre(
+                  textStyle: const TextStyle(
+                      fontSize: 18,
+                      letterSpacing: .5,
+                      fontWeight: FontWeight.w700),
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:logger/logger.dart';
 
 class ProfileFarmer extends StatefulWidget {
   final User user;
@@ -25,6 +26,7 @@ class ProfileFarmerState extends State<ProfileFarmer> {
   String? newProfileImageUrl; // Temporary image URL for editing
   File? selectedImage; // To store selected image locally
   final ImagePicker _picker = ImagePicker();
+  var logger = Logger();
 
   @override
   void initState() {
@@ -50,7 +52,7 @@ class ProfileFarmerState extends State<ProfileFarmer> {
         });
       }
     } catch (e) {
-      print('Error fetching user profile data: $e');
+      logger.e('Error fetching user profile data: $e');
     }
   }
 
@@ -91,7 +93,7 @@ class ProfileFarmerState extends State<ProfileFarmer> {
         isEditing = false;
       });
     } catch (e) {
-      print('Error saving profile data: $e');
+      logger.e('Error saving profile data: $e');
     }
   }
 
@@ -104,7 +106,7 @@ class ProfileFarmerState extends State<ProfileFarmer> {
         });
       }
     } catch (e) {
-      print('Error selecting profile image: $e');
+      logger.e('Error selecting profile image: $e');
     }
   }
 

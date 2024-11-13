@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import './terms_and_conditions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:logger/logger.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -23,6 +24,7 @@ class _SignUpPageState extends State<SignUpPage> {
       profileImageUrl = "";
   bool isChecked = false;
   bool _passwordVisible = false;
+  var logger = Logger();
 
   TextEditingController mailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -55,46 +57,62 @@ class _SignUpPageState extends State<SignUpPage> {
         });
 
         // Display success message
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-          "Registered Successfully",
-          style: TextStyle(fontSize: 20.0),
-        )));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+            "Registered Successfully",
+            style: TextStyle(fontSize: 20.0),
+          )));
 
-        // Conditional Navigation based on userType
-        if (userType == 'Farmer') {
-          // Navigate to Farmer's Home page
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => SellerDashboard(
-                        user: userCredential.user!,
-                      )));
+          // Conditional Navigation based on userType
+          if (userType == 'Farmer') {
+            // Navigate to Farmer's Home page
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SellerDashboard(
+                          user: userCredential.user!,
+                        )));
+          }
         } else if (userType == 'Buyer') {
           // Navigate to Buyer's Home page
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => MarketHomePage(
-                        user: userCredential.user!,
-                      )));
+          if (mounted) {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => MarketHomePage(
+                          user: userCredential.user!,
+                        )));
+          }
         }
       } on FirebaseAuthException catch (e) {
-        if (e.code == 'weak-password') {
+        if (e.code == 'weak-password' && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               backgroundColor: Colors.orangeAccent,
               content: Text(
                 "Password Provided is too Weak",
                 style: TextStyle(fontSize: 18.0),
               )));
-        } else if (e.code == "email-already-in-use") {
+        } else if (e.code == "email-already-in-use" && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               backgroundColor: Colors.orangeAccent,
               content: Text(
                 "Account Already exists",
                 style: TextStyle(fontSize: 18.0),
               )));
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                backgroundColor: Colors.orangeAccent,
+                content: Text(
+                  "Check your internet connection!",
+                  style: TextStyle(fontSize: 18.0),
+                )));
+          }
         }
+        setState(() {
+          isLoading = false;
+        });
       }
     }
   }

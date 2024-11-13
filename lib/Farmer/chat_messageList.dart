@@ -2,6 +2,7 @@ import 'package:agribazar/Buyers/chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ChatMessageFarmer extends StatefulWidget {
   const ChatMessageFarmer({super.key});
@@ -12,6 +13,9 @@ class ChatMessageFarmer extends StatefulWidget {
 
 class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
   final String farmerId = FirebaseAuth.instance.currentUser!.uid;
+  String searchQuery = '';
+  TextEditingController searchController = TextEditingController();
+  bool isSearching = false;
 
   @override
   Widget build(BuildContext context) {
@@ -20,16 +24,52 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: const Text(
-          'Messages',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
+        title: isSearching
+            ? TextField(
+                autocorrect: true,
+                autofocus: true,
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value.toLowerCase();
+                  });
+                },
+                style: const TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                  hintText: 'Search message...',
+                  hintStyle: const TextStyle(color: Colors.black54),
+                  border: InputBorder.none,
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.black),
+                    onPressed: () {
+                      setState(() {
+                        searchController.clear();
+                        searchQuery = '';
+                        isSearching = false;
+                      });
+                    },
+                  ),
+                ),
+              )
+            : Text(
+                'Messages',
+                style: GoogleFonts.abhayaLibre(
+                  textStyle: const TextStyle(
+                      fontSize: 22,
+                      letterSpacing: .5,
+                      fontWeight: FontWeight.w700),
+                ),
+              ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.black),
-            onPressed: () {},
-          ),
+          if (!isSearching)
+            IconButton(
+              icon: const Icon(Icons.search, color: Colors.black),
+              onPressed: () {
+                setState(() {
+                  isSearching = true;
+                });
+              },
+            ),
         ],
       ),
       body: Padding(
@@ -84,8 +124,26 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
                         return const Center(child: Text("No messages found"));
                       }
 
+                      List<ChatMessage> displaySearchedMessage =
+                          messagesSnapshot.data!
+                              .where((message) =>
+                                  message.username
+                                      .toLowerCase()
+                                      .contains(searchQuery) ||
+                                  message.message
+                                      .toLowerCase()
+                                      .contains(searchQuery))
+                              .toList();
+
+                      if (displaySearchedMessage.isEmpty) {
+                        return const Center(child: Text("No messages found"));
+                      }
+
                       return ListView(
-                        children: messagesSnapshot.data!.map((message) {
+                        children: (displaySearchedMessage.isNotEmpty
+                                ? displaySearchedMessage
+                                : messagesSnapshot.data!)
+                            .map((message) {
                           return ChatItem(
                             name: message.username,
                             message: message.message,
@@ -245,9 +303,11 @@ class ChatItem extends StatelessWidget {
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                    style: GoogleFonts.abhayaLibre(
+                      textStyle: const TextStyle(
+                          fontSize: 19,
+                          letterSpacing: .5,
+                          fontWeight: FontWeight.w700),
                     ),
                   ),
                   const SizedBox(height: 4),

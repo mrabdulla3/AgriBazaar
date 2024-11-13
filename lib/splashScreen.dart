@@ -1,11 +1,12 @@
 import 'package:agribazar/Buyers/buyers_home.dart';
 import 'package:agribazar/Farmer/farmer_home.dart';
-import 'package:agribazar/user_authentication/authScreen.dart';
+import 'package:agribazar/user_authentication/authscreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:logger/logger.dart';
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
@@ -16,36 +17,38 @@ class Splashscreen extends StatefulWidget {
 
 class _SplashscreenState extends State<Splashscreen> {
   bool userExist = false;
-
+  var logger = Logger();
   @override
   void initState() {
     super.initState();
     _navigateToNextScreen();
   }
 
+  User? currentUser = FirebaseAuth.instance.currentUser;
+
   // Function to navigate based on authentication state
   Future<void> _navigateToNextScreen() async {
     await Future.delayed(const Duration(seconds: 4));
 
-    User? user = FirebaseAuth.instance.currentUser;
-
-    if (user != null) {
+    if (currentUser != null) {
       // User is logged in, set userExist to true and navigate
       setState(() {
         userExist = true;
       });
-      _getUserTypeAndNavigate(user.uid);
+      _getUserTypeAndNavigate(currentUser!.uid);
     } else {
       // User is not logged in, set userExist to false and show AuthScreen
       setState(() {
         userExist = false;
       });
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const AuthScreen(),
-        ),
-      );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AuthScreen(),
+          ),
+        );
+      }
     }
   }
 
@@ -57,45 +60,50 @@ class _SplashscreenState extends State<Splashscreen> {
 
       if (userDoc.exists) {
         String userType = userDoc['userType'];
-
         if (userType == 'Farmer') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  SellerDashboard(user: FirebaseAuth.instance.currentUser!),
-            ),
-          );
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SellerDashboard(user: currentUser),
+              ),
+            );
+          }
         } else if (userType == 'Buyer') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  MarketHomePage(user: FirebaseAuth.instance.currentUser!),
-            ),
-          );
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MarketHomePage(user: currentUser),
+              ),
+            );
+          }
         } else {
           // Show error message if user data not found
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("User data not found. Please register."),
-          ));
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AuthScreen(),
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text("User data not found. Please register."),
+            ));
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AuthScreen(),
+              ),
+            );
+          }
         }
       }
     } catch (e) {
       // Handle errors and navigate to AuthScreen in case of failure
-      print('Error fetching user data: $e');
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const AuthScreen(),
-        ),
-      );
+      logger.e('Error fetching user data: $e');
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AuthScreen(),
+          ),
+        );
+      }
     }
   }
 
@@ -182,7 +190,8 @@ class _SplashscreenState extends State<Splashscreen> {
                                         Navigator.pushReplacement(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => AuthScreen(),
+                                            builder: (context) =>
+                                                const AuthScreen(),
                                           ),
                                         );
                                       },

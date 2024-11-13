@@ -1,7 +1,9 @@
-import 'package:agribazar/Buyers/addressForm.dart';
+import 'package:agribazar/Buyers/address_form.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:logger/logger.dart';
 
 class Cart extends StatefulWidget {
   final User? user;
@@ -14,6 +16,7 @@ class CartState extends State<Cart> {
   List<Map<String, dynamic>> cartProducts = [];
   bool isPickup = false;
   double deliveryCharge = 30.00;
+  var logger = Logger();
 
   @override
   void initState() {
@@ -48,7 +51,7 @@ class CartState extends State<Cart> {
         }).toList();
       });
     } catch (e) {
-      print("Error fetching cart items: $e");
+      logger.e("Error fetching cart items: $e");
     }
   }
 
@@ -65,12 +68,16 @@ class CartState extends State<Cart> {
       setState(() {
         cartProducts.removeAt(index);
       });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Cart item removed')));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Cart item removed')));
+      }
     } catch (e) {
       //print("Error deleting cart item: $e");
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Failed to remove item')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to remove item')));
+      }
     }
   }
 
@@ -85,10 +92,14 @@ class CartState extends State<Cart> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "My cart",
-          style: TextStyle(color: Colors.black),
+          style: GoogleFonts.abhayaLibre(
+            textStyle: const TextStyle(
+                fontSize: 25, letterSpacing: .5, fontWeight: FontWeight.w700),
+          ),
         ),
+        centerTitle: true,
         leading: IconButton(
           icon:
               const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
@@ -123,18 +134,21 @@ class CartState extends State<Cart> {
 
   Widget _buildCartItems() {
     if (cartProducts.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.shopping_cart, size: 100, color: Colors.grey),
-            SizedBox(height: 20),
+            const Icon(Icons.shopping_cart, size: 100, color: Colors.grey),
+            const SizedBox(height: 20),
             Text(
               "Your cart is empty",
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey),
+              style: GoogleFonts.abhayaLibre(
+                textStyle: const TextStyle(
+                    fontSize: 20,
+                    letterSpacing: .5,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey),
+              ),
             ),
           ],
         ),
@@ -197,9 +211,15 @@ class CartState extends State<Cart> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    title,
+                    style: GoogleFonts.abhayaLibre(
+                      textStyle: const TextStyle(
+                          fontSize: 19,
+                          letterSpacing: .5,
+                          fontWeight: FontWeight.w700),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Text('Rs. $price',
                       style: const TextStyle(fontSize: 14, color: Colors.grey)),
@@ -235,11 +255,30 @@ class CartState extends State<Cart> {
                     onPressed: () {
                       removeCartItem(index);
                     },
-                    child: const Text('Remove'))),
+                    child: Text(
+                      'Remove',
+                      style: GoogleFonts.abhayaLibre(
+                        textStyle: const TextStyle(
+                            fontSize: 18,
+                            letterSpacing: .5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black),
+                      ),
+                    ))),
             SizedBox(
                 width: screenWidth * 0.45,
                 child: OutlinedButton(
-                    onPressed: () {}, child: const Text('Order Now')))
+                    onPressed: () {},
+                    child: Text(
+                      'Order Now',
+                      style: GoogleFonts.abhayaLibre(
+                        textStyle: const TextStyle(
+                            fontSize: 18,
+                            letterSpacing: .5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black),
+                      ),
+                    )))
           ],
         )
       ],
@@ -273,9 +312,12 @@ class CartState extends State<Cart> {
           alignment: Alignment.center,
           child: Text(
             title,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black,
-              fontWeight: FontWeight.bold,
+            style: GoogleFonts.abhayaLibre(
+              textStyle: const TextStyle(
+                  fontSize: 16,
+                  letterSpacing: .5,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black),
             ),
           ),
         ),
@@ -294,9 +336,15 @@ class CartState extends State<Cart> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Delivery to",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: GoogleFonts.abhayaLibre(
+            textStyle: const TextStyle(
+                fontSize: 20,
+                letterSpacing: .5,
+                fontWeight: FontWeight.bold,
+                color: Colors.black),
+          ),
         ),
         const SizedBox(height: 8),
         Row(
@@ -344,9 +392,15 @@ class CartState extends State<Cart> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Price Details",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: GoogleFonts.abhayaLibre(
+            textStyle: const TextStyle(
+                fontSize: 20,
+                letterSpacing: .5,
+                fontWeight: FontWeight.bold,
+                color: Colors.black),
+          ),
         ),
         const SizedBox(height: 8),
         Row(
@@ -369,9 +423,15 @@ class CartState extends State<Cart> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               "Total",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: GoogleFonts.abhayaLibre(
+                textStyle: const TextStyle(
+                    fontSize: 18,
+                    letterSpacing: .5,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              ),
             ),
             Text(
               "Rs. ${total.toStringAsFixed(2)}",
@@ -395,7 +455,13 @@ class CartState extends State<Cart> {
       ),
       child: Text(
         "Pay Now Rs. ${total.toStringAsFixed(2)}",
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        style: GoogleFonts.abhayaLibre(
+          textStyle: const TextStyle(
+              fontSize: 20,
+              letterSpacing: .5,
+              fontWeight: FontWeight.bold,
+              color: Colors.black),
+        ),
       ),
     );
   }

@@ -3,7 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:logger/logger.dart';
 
 class Profile extends StatefulWidget {
   final User? user;
@@ -16,7 +18,7 @@ class Profile extends StatefulWidget {
 class ProfileState extends State<Profile> {
   Map<String, dynamic>? userProfileData;
   bool isEditing = false;
-  bool isUploading = false; // Flag to show loading indicator
+  bool isUploading = false;
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController addressController = TextEditingController();
@@ -25,7 +27,7 @@ class ProfileState extends State<Profile> {
   String? newProfileImageUrl; // Temporary image URL for editing
   File? selectedImage; // To store selected image locally
   final ImagePicker _picker = ImagePicker();
-
+  var logger = Logger();
   @override
   void initState() {
     super.initState();
@@ -52,7 +54,7 @@ class ProfileState extends State<Profile> {
         });
       }
     } catch (e) {
-      print('Error fetching user profile data: $e');
+      logger.e('Error fetching user profile data: $e');
     }
   }
 
@@ -75,7 +77,6 @@ class ProfileState extends State<Profile> {
         newProfileImageUrl = await snapshot.ref.getDownloadURL();
         profileImageUrl = newProfileImageUrl; // Update profile image URL
       }
-
       // Save profile data (including the new profile image if it was updated)
       await FirebaseFirestore.instance
           .collection('users')
@@ -91,7 +92,7 @@ class ProfileState extends State<Profile> {
         isEditing = false;
       });
     } catch (e) {
-      print('Error saving profile data: $e');
+      logger.e('Error saving profile data: $e');
     } finally {
       setState(() {
         isUploading = false; // Reset uploading flag
@@ -108,7 +109,7 @@ class ProfileState extends State<Profile> {
         });
       }
     } catch (e) {
-      print('Error selecting profile image: $e');
+      logger.e('Error selecting profile image: $e');
     }
   }
 
@@ -165,8 +166,7 @@ class ProfileState extends State<Profile> {
                           bottom: 0,
                           right: 0,
                           child: GestureDetector(
-                            onTap:
-                                _pickImage, // Allow picking image when editing
+                            onTap: _pickImage,
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
@@ -205,10 +205,12 @@ class ProfileState extends State<Profile> {
                             widget.user!.displayName ??
                             'Unknown'
                         : 'Loading...',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                    style: GoogleFonts.abhayaLibre(
+                      textStyle: const TextStyle(
+                          fontSize: 20,
+                          letterSpacing: .5,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
                     ),
                   ),
                 ],
@@ -235,8 +237,6 @@ class ProfileState extends State<Profile> {
                 : const Center(child: CircularProgressIndicator()),
 
             const SizedBox(height: 20),
-
-            // Edit Profile Button
             if (widget.user != null)
               ElevatedButton(
                 onPressed: () {
@@ -258,7 +258,13 @@ class ProfileState extends State<Profile> {
                 ),
                 child: Text(
                   isEditing ? 'Save' : 'Edit profile',
-                  style: const TextStyle(fontSize: 16),
+                  style: GoogleFonts.abhayaLibre(
+                    textStyle: const TextStyle(
+                        fontSize: 18,
+                        letterSpacing: .5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
+                  ),
                 ),
               ),
           ],

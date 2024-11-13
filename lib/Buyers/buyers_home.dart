@@ -1,6 +1,6 @@
 import 'package:agribazar/Buyers/cart.dart';
 import 'package:agribazar/Buyers/category.dart';
-import 'package:agribazar/Buyers/chat_userList.dart';
+import 'package:agribazar/Buyers/chat_userlist.dart';
 import 'package:agribazar/Buyers/detailed_page.dart';
 import 'package:agribazar/Buyers/notification.dart';
 import 'package:agribazar/Buyers/pricing.dart';
@@ -12,6 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:logger/logger.dart';
 
 class MarketHomePage extends StatefulWidget {
   final User? user;
@@ -30,6 +31,7 @@ class _MarketHomePageState extends State<MarketHomePage> {
   TextEditingController searchController = TextEditingController();
   List<Map<String, dynamic>> searchResult = [];
   bool isSearching = false;
+  var logger = Logger();
 
   Future<void> _getCrops() async {
     try {
@@ -50,7 +52,7 @@ class _MarketHomePageState extends State<MarketHomePage> {
         errorMessage = 'Error fetching products: $e';
         isLoading = false;
       });
-      print('Error fetching featured products: $e');
+      logger.e('Error fetching featured products: $e');
     }
   }
 
@@ -72,12 +74,13 @@ class _MarketHomePageState extends State<MarketHomePage> {
       setState(() {
         cartItemCount++; // Increment the cart item count
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item added to cart!')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Item added to cart!')),
+        );
+      }
     } catch (e) {
-      print('Error adding item to cart: $e');
+      logger.e('Error adding item to cart: $e');
     }
   }
 
@@ -412,10 +415,10 @@ class _MarketHomePageState extends State<MarketHomePage> {
       child: Card(
         elevation: 8, // Adds shadow intensity
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15), // Rounded corners
+          borderRadius: BorderRadius.circular(15),
         ),
         shadowColor: Colors.black.withOpacity(0.5), // Shadow color
-        margin: const EdgeInsets.all(10), // Adds some margin around the card
+        margin: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

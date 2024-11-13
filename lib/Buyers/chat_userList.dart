@@ -12,10 +12,9 @@ class ChatMessageBuyer extends StatefulWidget {
 
 class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
   final String buyerId = FirebaseAuth.instance.currentUser!.uid;
-  TextEditingController searchController = TextEditingController();
-  List<Map<String, dynamic>> searchResult = [];
   bool isSearching = false;
-  Future<void> searchQuery(String val) async {}
+  String searchQuery = '';
+  TextEditingController searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -24,18 +23,48 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: const Text(
-          'Messages',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
+        title: isSearching
+            ? TextField(
+                controller: searchController,
+                autofocus: true,
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value.toLowerCase();
+                  });
+                },
+                style: const TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                  hintText: "Search messages...",
+                  hintStyle: const TextStyle(color: Colors.black54),
+                  border: InputBorder.none,
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.black),
+                    onPressed: () {
+                      setState(() {
+                        searchController.clear();
+                        searchQuery = '';
+                        isSearching = false;
+                      });
+                    },
+                  ),
+                ),
+              )
+            : const Text(
+                'Messages',
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.black),
-            onPressed: () {
-              searchQuery(searchController.text);
-            },
-          ),
+          if (!isSearching)
+            IconButton(
+              icon: const Icon(Icons.search, color: Colors.black),
+              onPressed: () {
+                setState(() {
+                  isSearching = true;
+                });
+              },
+            ),
         ],
       ),
       body: Padding(
@@ -51,18 +80,10 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
-
-                  // for (var doc in snapshot.data!.docs) {
-                  //   print("Doc ID from Firestore: ${doc.id}");
-                  //   if (doc.id.startsWith(buyerId)) {
-                  //     print("Match found for current user ID: ${doc.id}");
-                  //   }
-                  // }
                   // Filter chat room documents where the document ID ends with farmerId
                   final filteredRooms = snapshot.data!.docs.where((doc) {
                     return doc.id.startsWith(buyerId);
                   }).toList();
-                  //  print("FilteredLis length:${filteredRooms.length}");
                   // Check if filtered rooms are empty
                   if (filteredRooms.isEmpty) {
                     return const Center(
@@ -77,7 +98,6 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
                           ]),
                     );
                   }
-
                   // Fetch messages for each filtered chat room
                   return FutureBuilder<List<ChatMessage>>(
                     future: _fetchMessagesForChatRooms(filteredRooms),
@@ -86,7 +106,6 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
                           ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       }
-
                       if (messagesSnapshot.hasError) {
                         return const Center(
                             child: Text("Error fetching messages"));
@@ -97,17 +116,35 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
                         return const Center(child: Text("No messages found"));
                       }
 
+                      // Filter messages based on the search term
+                      List<ChatMessage> displayedMessages = messagesSnapshot
+                          .data!
+                          .where((message) =>
+                              message.username
+                                  .toLowerCase()
+                                  .contains(searchQuery) ||
+                              message.message
+                                  .toLowerCase()
+                                  .contains(searchQuery))
+                          .toList();
+
+                      if (displayedMessages.isEmpty) {
+                        return const Center(child: Text("No messages found"));
+                      }
+
                       return ListView(
-                        children: messagesSnapshot.data!.map((message) {
+                        children: (displayedMessages.isNotEmpty
+                                ? displayedMessages
+                                : messagesSnapshot.data!)
+                            .map((message) {
                           return ChatItem(
                             name: message.username,
                             message: message.message,
                             time: formatTime(message.time),
                             isRead: message.isRead,
                             imageUrl: message.buyerImageUrl,
-                            senderId: message.senderId, // Pass senderId here
-                            chatRoomId: message
-                                .chatRoomId, // Ensure chatRoomId is included
+                            senderId: message.senderId,
+                            chatRoomId: message.chatRoomId,
                           );
                         }).toList(),
                       );

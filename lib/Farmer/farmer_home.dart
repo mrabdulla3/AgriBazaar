@@ -1,11 +1,14 @@
 import 'package:agribazar/Farmer/category_crops.dart';
-import 'package:agribazar/Farmer/chat_messageList.dart';
+import 'package:agribazar/Farmer/chat_messagelist.dart';
 import 'package:agribazar/Farmer/notifications.dart';
+import 'package:agribazar/Farmer/our_products.dart';
 import 'package:agribazar/Farmer/profile.dart';
-import 'package:agribazar/user_authentication/authScreen.dart';
+import 'package:agribazar/user_authentication/authscreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:logger/logger.dart';
 
 class SellerDashboard extends StatefulWidget {
   final User? user;
@@ -19,6 +22,7 @@ class SellerDashboard extends StatefulWidget {
 class _SellerDashboardState extends State<SellerDashboard> {
   Map<String, dynamic>? userProfileData;
   bool isLoading = false;
+  var logger = Logger();
   @override
   void initState() {
     super.initState();
@@ -42,7 +46,7 @@ class _SellerDashboardState extends State<SellerDashboard> {
         });
       }
     } catch (e) {
-      print('Error fetching user profile data: $e');
+      logger.e('Error fetching user profile data: $e');
     }
   }
 
@@ -97,50 +101,46 @@ class _SellerDashboardState extends State<SellerDashboard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              userProfileData!['name'] ??
-                                  widget.user!.displayName,
-                              style: const TextStyle(
-                                  fontSize: 22, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              widget.user!.email ?? "",
-                              style: const TextStyle(fontSize: 16),
-                            ),
+                                userProfileData!['name'] ??
+                                    widget.user!.displayName,
+                                style: GoogleFonts.abhayaLibre(
+                                  textStyle: const TextStyle(
+                                      fontSize: 22,
+                                      letterSpacing: .5,
+                                      fontWeight: FontWeight.bold),
+                                )),
+                            Text(widget.user!.email ?? "",
+                                style: GoogleFonts.abhayaLibre(
+                                  textStyle: const TextStyle(
+                                      fontSize: 18,
+                                      letterSpacing: .5,
+                                      fontWeight: FontWeight.w600),
+                                )),
                           ],
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // Earnings and Active Orders
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Your Earning",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text(
-                            "See more",
-                            style: TextStyle(fontSize: 16, color: Colors.blue),
-                          ),
-                        ),
+                        buildEarningsCard('assets/order.jpg', 'Orders'),
+                        buildEarningsCard('assets/wallet.png', 'Wallet'),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        buildEarningsCard('Rs. 5,000', 'Balance'),
-                        buildEarningsCard('1 (Rs. 500)', 'Active Order'),
+                        buildEarningsCard('assets/product.png', 'Products'),
+                        buildEarningsCard(
+                            'assets/statistics.png', 'Statistics'),
                       ],
                     ),
                   ),
@@ -152,11 +152,13 @@ class _SellerDashboardState extends State<SellerDashboard> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Rating",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
+                        Text("Rating",
+                            style: GoogleFonts.acme(
+                              textStyle: const TextStyle(
+                                  fontSize: 20,
+                                  letterSpacing: .5,
+                                  fontWeight: FontWeight.w500),
+                            )),
                         Row(
                           children: [
                             Icon(Icons.star,
@@ -182,12 +184,16 @@ class _SellerDashboardState extends State<SellerDashboard> {
                   const SizedBox(height: 20),
 
                   // Government Price Section
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text(
                       "Government Price",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.acme(
+                        textStyle: const TextStyle(
+                            fontSize: 20,
+                            letterSpacing: .5,
+                            fontWeight: FontWeight.w500),
+                      ),
                     ),
                   ),
                   Container(
@@ -253,7 +259,7 @@ class _SellerDashboardState extends State<SellerDashboard> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CropCategoriesPage(),
+                      builder: (context) => const CropCategoriesPage(),
                     ));
               },
             ),
@@ -292,27 +298,45 @@ class _SellerDashboardState extends State<SellerDashboard> {
   }
 
   // Widget to build earnings card
-  Widget buildEarningsCard(String amount, String label) {
-    return Container(
-      width: 160,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Text(
-            amount,
-            style: const TextStyle(
-                fontSize: 22, color: Colors.green, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16),
-          ),
-        ],
+  Widget buildEarningsCard(String imageUrl, String label) {
+    return GestureDetector(
+      onTap: () {
+        if (label == 'Products') {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const OurProducts(),
+              ));
+        } else if (label == 'Orders') {
+        } else if (label == 'Wallet') {
+        } else if (label == 'Statistics') {}
+      },
+      child: Container(
+        width: 160,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: AssetImage(imageUrl),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              label,
+              style: GoogleFonts.abhayaLibre(
+                textStyle: const TextStyle(
+                    fontSize: 19,
+                    letterSpacing: .5,
+                    fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -337,11 +361,16 @@ class _SellerDashboardState extends State<SellerDashboard> {
           const SizedBox(height: 8),
           Text(
             name,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: GoogleFonts.abhayaLibre(
+              textStyle: const TextStyle(
+                  fontSize: 19, letterSpacing: .5, fontWeight: FontWeight.w700),
+            ),
           ),
           Text(
             price,
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
+            style: GoogleFonts.abhayaLibre(
+              textStyle: const TextStyle(fontSize: 15, letterSpacing: .5),
+            ),
           ),
         ],
       ),

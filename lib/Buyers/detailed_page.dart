@@ -3,6 +3,8 @@ import 'package:agribazar/Buyers/chat_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:logger/logger.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final User? user;
@@ -19,6 +21,7 @@ class ProductDetailPageState extends State<ProductDetailPage> {
   int quantity = 1;
   int cartItemCount = 0; // Add a cart item count
   String chatRoomId = "";
+  var logger = Logger();
 
   Map<String, dynamic>? productDetails;
   bool isLoading = true;
@@ -37,13 +40,12 @@ class ProductDetailPageState extends State<ProductDetailPage> {
         productDetails = productSnapshot.data() as Map<String, dynamic>?;
         isLoading = false;
       });
-      // print(productDetails);
     } catch (e) {
       setState(() {
         errorMessage = 'Error fetching product details: $e';
         isLoading = false;
       });
-      print('Error fetching product details: $e');
+      logger.e('Error fetching product details: $e');
     }
   }
 
@@ -65,12 +67,13 @@ class ProductDetailPageState extends State<ProductDetailPage> {
       setState(() {
         cartItemCount++; // Increment the cart item count
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item added to cart!')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Item added to cart!')),
+        );
+      }
     } catch (e) {
-      print('Error adding item to cart: $e');
+      logger.e('Error adding item to cart: $e');
     }
   }
 
@@ -156,9 +159,11 @@ class ProductDetailPageState extends State<ProductDetailPage> {
                                 Text(
                                   productDetails!['Variety'] ??
                                       'Product Name', // Fetch crop name
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
+                                  style: GoogleFonts.abhayaLibre(
+                                    textStyle: const TextStyle(
+                                        fontSize: 25,
+                                        letterSpacing: .5,
+                                        fontWeight: FontWeight.w700),
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -210,9 +215,10 @@ class ProductDetailPageState extends State<ProductDetailPage> {
                                 ),
                                 Text(
                                   'Rs.${productDetails!['Price']}', // Fetch price from Firestore
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ],
                             )
@@ -220,27 +226,45 @@ class ProductDetailPageState extends State<ProductDetailPage> {
                         ),
                         const SizedBox(height: 16),
                         // Description
-                        const Text(
+                        Text(
                           'Description',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.abhayaLibre(
+                            textStyle: const TextStyle(
+                                fontSize: 22,
+                                letterSpacing: .5,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           productDetails!['Description'] ??
                               'No description available.', // Fetch description from Firestore
-                          style: const TextStyle(fontSize: 16),
+                          style: GoogleFonts.abhayaLibre(
+                            textStyle: const TextStyle(
+                                fontSize: 18,
+                                letterSpacing: .5,
+                                fontWeight: FontWeight.w500),
+                          ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Features',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                          style: GoogleFonts.abhayaLibre(
+                            textStyle: const TextStyle(
+                                fontSize: 22,
+                                letterSpacing: .5,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           productDetails!['Features'] ?? '',
-                          style: const TextStyle(fontSize: 16),
+                          style: GoogleFonts.abhayaLibre(
+                            textStyle: const TextStyle(
+                                fontSize: 18,
+                                letterSpacing: .5,
+                                fontWeight: FontWeight.w500),
+                          ),
                         ),
 
                         const Spacer(),
@@ -265,10 +289,14 @@ class ProductDetailPageState extends State<ProductDetailPage> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Add to Cart',
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                              style: GoogleFonts.aclonica(
+                                textStyle: const TextStyle(
+                                    fontSize: 16,
+                                    letterSpacing: .5,
+                                    fontWeight: FontWeight.w500),
+                              ),
                             ),
                           ),
                         ),
@@ -280,21 +308,17 @@ class ProductDetailPageState extends State<ProductDetailPage> {
           right: 20,
           child: FloatingActionButton(
             onPressed: () {
-              //print('Widget User ID: ${widget.user?.uid}'); // Debug print
-              //print('Product User ID: ${productDetails?['userId']}'); // Debug print
               if (productDetails != null &&
                   productDetails!.containsKey('userId') &&
                   productDetails!['userId'] != null) {
                 // Create chatRoomId if userId is available
                 chatRoomId = "${widget.user!.uid}${productDetails!['userId']}";
 
-                // Navigate to ChatScreen
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ChatScreen(
-                      userId:
-                          productDetails!['userId'], // Ensure this is not null
+                      userId: productDetails!['userId'],
                       chatRoomId: chatRoomId,
                     ),
                   ),

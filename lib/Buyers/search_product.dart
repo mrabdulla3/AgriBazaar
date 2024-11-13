@@ -3,6 +3,7 @@ import 'package:agribazar/Buyers/detailed_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:logger/logger.dart';
 
 class SearchProduct extends StatefulWidget {
   final User? user;
@@ -16,6 +17,7 @@ class SearchProduct extends StatefulWidget {
 class SearchProductState extends State<SearchProduct> {
   String errorMessage = '';
   int cartItemCount = 0; // Cart item count
+  var logger = Logger();
 
   Future<void> addCartItem(String productId, String productName, int price,
       String pImage, String address) async {
@@ -40,7 +42,7 @@ class SearchProductState extends State<SearchProduct> {
         const SnackBar(content: Text('Item added to cart!')),
       );
     } catch (e) {
-      print('Error adding item to cart: $e');
+      logger.e('Error adding item to cart: $e');
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 
 class ChatScreen extends StatefulWidget {
   final String? chatRoomId;
@@ -16,6 +17,7 @@ class ChatScreenState extends State<ChatScreen> {
   Map<String, dynamic>? farmerProfileData;
   Map<String, dynamic>? currentUserProfileData;
   bool isLoading = true; // Loading state variable
+  var logger = Logger();
 
   @override
   void initState() {
@@ -51,7 +53,7 @@ class ChatScreenState extends State<ChatScreen> {
         });
       }
     } catch (e) {
-      print('Error fetching farmer profile data: $e');
+      logger.e('Error fetching farmer profile data: $e');
     }
   }
 
@@ -68,7 +70,7 @@ class ChatScreenState extends State<ChatScreen> {
         });
       }
     } catch (e) {
-      print('Error fetching current user profile data: $e');
+      logger.e('Error fetching current user profile data: $e');
     }
   }
 
@@ -110,7 +112,7 @@ class ChatScreenState extends State<ChatScreen> {
         });
       }
     } catch (e) {
-      print('Error sending message: $e');
+      logger.e('Error sending message: $e');
     }
   }
 

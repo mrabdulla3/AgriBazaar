@@ -3,6 +3,7 @@ import 'package:agribazar/Buyers/detailed_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:logger/logger.dart';
 
 class Categorys extends StatefulWidget {
   final User? user;
@@ -18,6 +19,7 @@ class _CategorysState extends State<Categorys> {
   String errorMessage = '';
   bool isLoading = true;
   int cartItemCount = 0; // Add a cart item count
+  var logger = Logger();
 
   Future<void> _getCrops(String category) async {
     try {
@@ -39,7 +41,7 @@ class _CategorysState extends State<Categorys> {
         errorMessage = 'Error fetching crops for $category: $e';
         isLoading = false;
       });
-      print('Error fetching crops: $e');
+      logger.e('Error fetching crops: $e');
     }
   }
 
@@ -61,12 +63,13 @@ class _CategorysState extends State<Categorys> {
       setState(() {
         cartItemCount++; // Increment the cart item count
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item added to cart!')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Item added to cart!')),
+        );
+      }
     } catch (e) {
-      print('Error adding item to cart: $e');
+      logger.e('Error adding item to cart: $e');
     }
   }
 

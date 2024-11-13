@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import './forgotpassword.dart';
+import 'package:logger/logger.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -19,6 +20,7 @@ class _SignInPageState extends State<SignInPage> {
   bool rememberMe = false;
   bool _passwordVisible = false;
   bool isLoading = false;
+  var logger = Logger();
 
   TextEditingController mailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -39,14 +41,14 @@ class _SignInPageState extends State<SignInPage> {
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (userDoc.exists) {
         String userType = userDoc['userType'];
-        if (userType == 'Farmer') {
+        if (userType == 'Farmer' && mounted) {
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (context) =>
                     SellerDashboard(user: userCredential.user!),
               ));
-        } else if (userType == 'Buyer') {
+        } else if (userType == 'Buyer' && mounted) {
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -54,26 +56,40 @@ class _SignInPageState extends State<SignInPage> {
                     MarketHomePage(user: userCredential.user!),
               ));
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text("User data not found. Please register.")));
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text("User data not found. Please register.")));
+          }
         }
       }
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
+      if (e.code == 'user-not-found' && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             backgroundColor: Colors.orangeAccent,
             content: Text(
               "No User Found for that Email",
               style: TextStyle(fontSize: 18.0),
             )));
-      } else if (e.code == 'wrong-password') {
+      } else if (e.code == 'wrong-password' && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             backgroundColor: Colors.orangeAccent,
             content: Text(
               "Wrong Password Provided by User",
               style: TextStyle(fontSize: 18.0),
             )));
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              backgroundColor: Colors.orangeAccent,
+              content: Text(
+                "Check your internet connection!",
+                style: TextStyle(fontSize: 18.0),
+              )));
+        }
       }
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -94,7 +110,7 @@ class _SignInPageState extends State<SignInPage> {
             await _auth.signInWithCredential(credential);
         return userCredential.user;
       } on FirebaseAuthException catch (e) {
-        print(e.message);
+        logger.e(e.message);
       }
     }
     return null;

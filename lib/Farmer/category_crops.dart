@@ -1,5 +1,6 @@
 import 'package:agribazar/Farmer/crop_form_detail.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CropCategoriesPage extends StatelessWidget {
   const CropCategoriesPage({super.key});
@@ -7,7 +8,13 @@ class CropCategoriesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('What crops are you offering?'),
+        title: Text(
+          'What crops are you offering?',
+          style: GoogleFonts.abhayaLibre(
+            textStyle: const TextStyle(
+                fontSize: 22, letterSpacing: .5, fontWeight: FontWeight.w700),
+          ),
+        ),
         backgroundColor: const Color(0xFFFDBE42),
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -44,7 +51,6 @@ class CropCategoriesPage extends StatelessWidget {
       elevation: 3,
       child: InkWell(
         onTap: () {
-          // Handle category tap
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -65,7 +71,12 @@ class CropCategoriesPage extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               title,
-              style: const TextStyle(fontSize: 16, color: Colors.black87),
+              style: GoogleFonts.abhayaLibre(
+                textStyle: const TextStyle(
+                    fontSize: 18,
+                    letterSpacing: .5,
+                    fontWeight: FontWeight.w700),
+              ),
             ),
           ],
         ),

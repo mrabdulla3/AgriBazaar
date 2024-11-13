@@ -1,8 +1,9 @@
-import 'package:agribazar/user_authentication/authScreen.dart';
+import 'package:agribazar/user_authentication/authscreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:logger/logger.dart';
 
 class Sidebar extends StatefulWidget {
   final User? user;
@@ -14,6 +15,7 @@ class Sidebar extends StatefulWidget {
 
 class _SidebarState extends State<Sidebar> {
   Map<String, dynamic>? userProfileData;
+  var logger = Logger();
 
   Future<void> _getUserInfo() async {
     try {
@@ -28,7 +30,7 @@ class _SidebarState extends State<Sidebar> {
         });
       }
     } catch (e) {
-      print('Error fetching user profile data: $e');
+      logger.e('Error fetching user profile data: $e');
     }
   }
 
