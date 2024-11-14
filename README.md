@@ -74,7 +74,7 @@ Clone the Repository
 
 bash
 Copy code :
-git clone https://github.com/username/agribazar.git
+git clone : https://github.com/mrabdulla3/AgriBazaar.git
 
 cd agribazar
 
