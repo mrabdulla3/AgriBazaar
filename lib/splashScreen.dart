@@ -1,6 +1,6 @@
-import 'package:agribazar/Buyers/buyers_home.dart';
-import 'package:agribazar/Farmer/farmer_home.dart';
-import 'package:agribazar/user_authentication/authscreen.dart';
+import 'package:agribazar/views/buyer_views/buyers_home.dart';
+import 'package:agribazar/views/farmer_views/farmer_home.dart';
+import 'package:agribazar/views/authentication_views/authScreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
