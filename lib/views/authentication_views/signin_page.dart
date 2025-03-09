@@ -1,120 +1,12 @@
-import 'package:agribazar/views/buyer_views/buyers_home.dart';
-import 'package:agribazar/views/farmer_views/farmer_home.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:agribazar/controllers/authentication_controller/signin_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'forgotpassword.dart';
-import 'package:logger/logger.dart';
 
-class SignInPage extends StatefulWidget {
-  const SignInPage({super.key});
-  @override
-  State<SignInPage> createState() => _SignInPageState();
-}
-
-class _SignInPageState extends State<SignInPage> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  String email = "", password = "";
-  bool rememberMe = false;
-  bool _passwordVisible = false;
-  bool isLoading = false;
-  var logger = Logger();
-
-  TextEditingController mailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-
-  final _formkey = GlobalKey<FormState>();
-
-  userLogin() async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password);
-
-      String uid = userCredential.user!.uid;
-
-      DocumentSnapshot userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      if (userDoc.exists) {
-        String userType = userDoc['userType'];
-        if (userType == 'Farmer' && mounted) {
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    SellerDashboard(user: userCredential.user!),
-              ));
-        } else if (userType == 'Buyer' && mounted) {
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    MarketHomePage(user: userCredential.user!),
-              ));
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text("User data not found. Please register.")));
-          }
-        }
-      }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found' && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            backgroundColor: Colors.orangeAccent,
-            content: Text(
-              "No User Found for that Email",
-              style: TextStyle(fontSize: 18.0),
-            )));
-      } else if (e.code == 'wrong-password' && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            backgroundColor: Colors.orangeAccent,
-            content: Text(
-              "Wrong Password Provided by User",
-              style: TextStyle(fontSize: 18.0),
-            )));
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              backgroundColor: Colors.orangeAccent,
-              content: Text(
-                "Check your internet connection!",
-                style: TextStyle(fontSize: 18.0),
-              )));
-        }
-      }
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  Future<User?> signInWithGoogle() async {
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-    final GoogleSignInAccount? googleSignInAccount =
-        await googleSignIn.signIn();
-    if (googleSignInAccount != null) {
-      final GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleSignInAuthentication.accessToken,
-        idToken: googleSignInAuthentication.idToken,
-      );
-
-      try {
-        final UserCredential userCredential =
-            await _auth.signInWithCredential(credential);
-        return userCredential.user;
-      } on FirebaseAuthException catch (e) {
-        logger.e(e.message);
-      }
-    }
-    return null;
-  }
+class SignInPage extends StatelessWidget {
+  SignInPage({super.key});
+  final SigninController signinController = Get.put(SigninController());
 
   @override
   Widget build(BuildContext context) {
@@ -139,12 +31,12 @@ class _SignInPageState extends State<SignInPage> {
 
               const SizedBox(height: 30),
               Form(
-                key: _formkey,
+                key: signinController.formkey,
                 child: Column(
                   children: [
                     // Email Field
                     TextFormField(
-                      controller: mailController,
+                      controller: signinController.mailController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter the email';
@@ -161,39 +53,38 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                     const SizedBox(height: 15),
                     // Password Field
-                    TextFormField(
-                      controller: passwordController,
-                      obscureText: !_passwordVisible,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter the password';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(
-                          icon: Icon(_passwordVisible
-                              ? Icons.visibility
-                              : Icons.visibility_off),
-                          onPressed: () {
-                            setState(() {
-                              _passwordVisible = !_passwordVisible;
-                            });
+                    Obx(() => TextFormField(
+                          controller: signinController.passwordController,
+                          obscureText: !signinController.passwordVisible.value,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the password';
+                            }
+                            return null;
                           },
-                        ),
-                      ),
-                    ),
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            prefixIcon: const Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(signinController.passwordVisible.value
+                                  ? Icons.visibility
+                                  : Icons.visibility_off),
+                              onPressed: () {
+                                signinController.passwordVisible.value =
+                                    !signinController.passwordVisible.value;
+                              },
+                            ),
+                          ),
+                        )),
                     const SizedBox(height: 15),
                     // Sign In Button
                     SizedBox(
                       width: double.infinity,
                       height: 50,
-                      child: isLoading
+                      child: signinController.isLoading.value
                           ? const Center(child: CircularProgressIndicator())
                           : ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -204,12 +95,14 @@ class _SignInPageState extends State<SignInPage> {
                                 ),
                               ),
                               onPressed: () {
-                                if (_formkey.currentState!.validate()) {
-                                  setState(() {
-                                    email = mailController.text;
-                                    password = passwordController.text;
-                                  });
-                                  userLogin();
+                                if (signinController.formkey.currentState!
+                                    .validate()) {
+                                  signinController.email =
+                                      signinController.mailController.text;
+                                  signinController.password =
+                                      signinController.passwordController.text;
+
+                                  signinController.userLogin();
                                 }
                               },
                               child: Text(
@@ -227,12 +120,7 @@ class _SignInPageState extends State<SignInPage> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ForgotPassword(),
-                            ),
-                          );
+                          Get.to(ForgotPassword());
                         },
                         child: Text(
                           'Forgot password?',

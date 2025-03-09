@@ -354,7 +354,7 @@ class _MarketHomePageState extends State<MarketHomePage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          const SignUpPage(), // Your signup page widget
+                          SignUpPage(), // Your signup page widget
                     ),
                   );
                 }

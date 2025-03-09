@@ -1,29 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'signin_page.dart';
 import 'signup_page.dart';
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Login/Signup UI',
-      theme: ThemeData(
-        primarySwatch: Colors.pink,
-      ),
-      home: const AuthScreen(),
-    );
-  }
-}
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -32,33 +10,34 @@ class AuthScreen extends StatefulWidget {
 }
 
 class AuthScreenState extends State<AuthScreen> {
-  bool isLogin = true;
+  RxBool isLogin = true.obs;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: AnimatedSwitcher(
+          child: Obx(
+        () => AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
-          child: isLogin ? const SignInPage() : const SignUpPage(),
+          child: isLogin.value ? SignInPage() : SignUpPage(),
         ),
-      ),
+      )),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: GestureDetector(
-          onTap: () {
-            setState(() {
-              isLogin = !isLogin;
-            });
-          },
-          child: Text(
-            isLogin
-                ? "Don't have an account? Sign Up"
-                : "Already have an account? Sign In",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.blue.shade400,
-              fontWeight: FontWeight.bold,
+        child: Obx(
+          () => GestureDetector(
+            onTap: () {
+              isLogin.value = !isLogin.value;
+            },
+            child: Text(
+              isLogin.value
+                  ? "Don't have an account? Sign Up"
+                  : "Already have an account? Sign In",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.blue.shade400,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
