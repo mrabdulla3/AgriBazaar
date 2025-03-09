@@ -1,3 +1,4 @@
+import 'package:agribazar/controllers/buyer_controller/home_controller.dart';
 import 'package:agribazar/views/buyer_views/cart.dart';
 import 'package:agribazar/views/buyer_views/category.dart';
 import 'package:agribazar/views/buyer_views/chat_userList.dart';
@@ -5,116 +6,18 @@ import 'package:agribazar/views/buyer_views/detailed_page.dart';
 import 'package:agribazar/views/buyer_views/notification.dart';
 import 'package:agribazar/views/buyer_views/pricing.dart';
 import 'package:agribazar/views/buyer_views/profile.dart';
-import 'package:agribazar/views/buyer_views/search_product.dart';
 import 'package:agribazar/views/buyer_views/sidebar.dart';
 import 'package:agribazar/views/authentication_views/signup_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:logger/logger.dart';
 
-class MarketHomePage extends StatefulWidget {
+class MarketHomePage extends StatelessWidget {
   final User? user;
+  final HomeController homeController = Get.put(HomeController());
 
-  const MarketHomePage({this.user, super.key});
-
-  @override
-  State<MarketHomePage> createState() => _MarketHomePageState();
-}
-
-class _MarketHomePageState extends State<MarketHomePage> {
-  List<Map<String, dynamic>> featuredProducts = [];
-  bool isLoading = true;
-  String errorMessage = '';
-  int cartItemCount = 0; // Add a cart item count
-  TextEditingController searchController = TextEditingController();
-  List<Map<String, dynamic>> searchResult = [];
-  bool isSearching = false;
-  var logger = Logger();
-
-  Future<void> _getCrops() async {
-    try {
-      QuerySnapshot cropSnapshot =
-          await FirebaseFirestore.instance.collection('FormCropDetail').get();
-
-      setState(() {
-        featuredProducts = cropSnapshot.docs.map((doc) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          data['id'] = doc.id;
-          return data;
-        }).toList();
-        isLoading = false;
-      });
-      //print(featuredProducts);
-    } catch (e) {
-      setState(() {
-        errorMessage = 'Error fetching products: $e';
-        isLoading = false;
-      });
-      logger.e('Error fetching featured products: $e');
-    }
-  }
-
-  Future<void> addCartItem(String productId, String productName, int price,
-      String pImage, String address) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('carts')
-          .doc(widget.user!.uid)
-          .collection('item')
-          .add({
-        'productid': productId,
-        'productname': productName,
-        'productPrice': price,
-        'productImage': pImage,
-        'quantity': 1,
-        'address': address,
-      });
-      setState(() {
-        cartItemCount++; // Increment the cart item count
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Item added to cart!')),
-        );
-      }
-    } catch (e) {
-      logger.e('Error adding item to cart: $e');
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _getCrops();
-  }
-
-  void searchQuery(String val) {
-    if (featuredProducts.isNotEmpty && val.isNotEmpty) {
-      setState(() {
-        searchResult = featuredProducts.where((product) {
-          final cropName = product['Variety'].toString().toLowerCase();
-          return cropName.contains(val.toLowerCase());
-        }).toList();
-      });
-
-      if (searchResult.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                SearchProduct(user: widget.user, searchedList: searchResult),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No results found for "$val"')),
-        );
-      }
-    }
-    searchController.clear();
-  }
+  MarketHomePage({this.user, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -134,27 +37,19 @@ class _MarketHomePageState extends State<MarketHomePage> {
           IconButton(
             icon: const Icon(Icons.mail),
             onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChatMessageBuyer(),
-                  ));
+              Get.to(const ChatMessageBuyer());
             },
           ),
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const Notifications(),
-                  ));
+              Get.to(const Notifications());
             },
           ),
         ],
       ),
       drawer: Sidebar(
-        user: widget.user!,
+        user: user!,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -174,9 +69,9 @@ class _MarketHomePageState extends State<MarketHomePage> {
                       width: 1),
                 ),
                 child: TextField(
-                  controller: searchController,
+                  controller: homeController.searchController,
                   onSubmitted: (value) {
-                    searchQuery(value);
+                    homeController.searchQuery(value);
                   },
                   decoration: InputDecoration(
                     hintText: "Search...",
@@ -190,7 +85,8 @@ class _MarketHomePageState extends State<MarketHomePage> {
                     prefixIcon: IconButton(
                       icon: const Icon(Icons.search, color: Colors.black),
                       onPressed: () {
-                        searchQuery(searchController.text);
+                        homeController
+                            .searchQuery(homeController.searchController.text);
                       },
                     ),
                   ),
@@ -247,39 +143,40 @@ class _MarketHomePageState extends State<MarketHomePage> {
               const SizedBox(height: 10),
 
               // GridView for displaying products
-              if (isLoading)
-                const Center(
-                  child: CircularProgressIndicator(),
-                )
-              else if (errorMessage.isNotEmpty)
-                Center(
-                  child: Text(errorMessage,
-                      style: const TextStyle(color: Colors.red)),
-                )
-              else
-                GridView.builder(
-                  shrinkWrap:
-                      true, // This will make the GridView take minimum space
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Prevent scrolling inside GridView
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // Number of items in a row
-                    crossAxisSpacing: 10.0,
-                    mainAxisSpacing: 10.0,
-                    childAspectRatio: 0.75, // Aspect ratio for the grid items
-                  ),
-                  itemCount: featuredProducts.length,
-                  itemBuilder: (context, index) {
-                    // print(featuredProducts[index]['Variety']);
-                    return buildFeaturedProduct(
-                      featuredProducts[index]['Variety'],
-                      featuredProducts[index]['Crop Image'],
-                      featuredProducts[index]['Price'],
-                      featuredProducts[index]['id'],
-                      featuredProducts[index]['Address'],
-                    );
-                  },
-                ),
+              Obx(() {
+                if (homeController.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (homeController.errorMessage.isNotEmpty) {
+                  return Center(
+                      child: Text(homeController.errorMessage.value,
+                          style: const TextStyle(color: Colors.red)));
+                } else {
+                  return GridView.builder(
+                    shrinkWrap:
+                        true, // This will make the GridView take minimum space
+                    physics:
+                        const NeverScrollableScrollPhysics(), // Prevent scrolling inside GridView
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2, // Number of items in a row
+                      crossAxisSpacing: 10.0,
+                      mainAxisSpacing: 10.0,
+                      childAspectRatio: 0.75, // Aspect ratio for the grid items
+                    ),
+                    itemCount: homeController.featuredProducts.length,
+                    itemBuilder: (context, index) {
+                      //print(homeController.featuredProducts[index]['Variety']);
+                      return buildFeaturedProduct(
+                        homeController.featuredProducts[index]['Variety'],
+                        homeController.featuredProducts[index]['Crop Image'],
+                        homeController.featuredProducts[index]['Price'],
+                        homeController.featuredProducts[index]['id'],
+                        homeController.featuredProducts[index]['Address'],
+                      );
+                    },
+                  );
+                }
+              })
             ],
           ),
         ),
@@ -295,12 +192,7 @@ class _MarketHomePageState extends State<MarketHomePage> {
             icon: IconButton(
               icon: const Icon(Icons.home),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MarketHomePage(),
-                  ),
-                );
+                Get.to(MarketHomePage());
               },
             ),
             label: 'Home',
@@ -309,12 +201,9 @@ class _MarketHomePageState extends State<MarketHomePage> {
             icon: IconButton(
               icon: const Icon(Icons.shopping_cart),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Cart(
-                      user: widget.user!,
-                    ),
+                Get.to(
+                  Cart(
+                    user: user!,
                   ),
                 );
               },
@@ -325,12 +214,7 @@ class _MarketHomePageState extends State<MarketHomePage> {
             icon: IconButton(
               icon: const Icon(Icons.monetization_on),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const Pricing(),
-                  ),
-                );
+                Get.to(const Pricing());
               },
             ),
             label: 'Pricing',
@@ -339,24 +223,15 @@ class _MarketHomePageState extends State<MarketHomePage> {
             icon: IconButton(
               icon: const Icon(Icons.person),
               onPressed: () {
-                if (widget.user != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Profile(
-                        user: widget.user!, // Pass the user if not null
-                      ),
+                if (user != null) {
+                  Get.to(
+                    Profile(
+                      user: user!, // Pass the user if not null
                     ),
                   );
                 } else {
                   // Navigate to the signup page if user is null
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          SignUpPage(), // Your signup page widget
-                    ),
-                  );
+                  Get.to(SignUpPage());
                 }
               },
             ),
@@ -374,12 +249,7 @@ class _MarketHomePageState extends State<MarketHomePage> {
         GestureDetector(
           onTap: () {
             //Handle navigation to category page
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      Categorys(user: widget.user!, cropType: title),
-                ));
+            Get.to(Categorys(user: user!, cropType: title));
           },
           child: CircleAvatar(
             radius: 30,
@@ -401,16 +271,13 @@ class _MarketHomePageState extends State<MarketHomePage> {
   // Function to build each featured product
   Widget buildFeaturedProduct(String name, String imageUrl, int price,
       String productId, String address) {
-    double screenHeight = MediaQuery.of(context).size.height;
+    double screenHeight = Get.height;
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ProductDetailPage(
-                      user: FirebaseAuth.instance.currentUser!,
-                      productId: productId,
-                    )));
+        Get.to(ProductDetailPage(
+          user: FirebaseAuth.instance.currentUser!,
+          productId: productId,
+        ));
       },
       child: Card(
         elevation: 8, // Adds shadow intensity
@@ -474,7 +341,8 @@ class _MarketHomePageState extends State<MarketHomePage> {
                         color: Colors.brown),
                     onPressed: () {
                       // Add to cart or handle other functionality
-                      addCartItem(productId, name, price, imageUrl, address);
+                      homeController.addCartItem(
+                          productId, name, price, imageUrl, address);
                     },
                   ),
                 ],
