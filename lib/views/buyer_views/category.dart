@@ -1,9 +1,12 @@
+import 'package:agribazar/controllers/buyer_controller/cart_controller.dart';
+import 'package:agribazar/controllers/buyer_controller/category_controller.dart';
 import 'package:agribazar/views/buyer_views/cart.dart';
 import 'package:agribazar/views/buyer_views/detailed_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:logger/logger.dart';
+import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:get/instance_manager.dart';
 
 class Categorys extends StatefulWidget {
   final User? user;
@@ -14,69 +17,16 @@ class Categorys extends StatefulWidget {
   State<Categorys> createState() => _CategorysState();
 }
 
+final CartController cartController = Get.put(CartController());
+
 class _CategorysState extends State<Categorys> {
-  List<Map<String, dynamic>> productsList = [];
-  String errorMessage = '';
-  bool isLoading = true;
-  int cartItemCount = 0; // Add a cart item count
-  var logger = Logger();
-
-  Future<void> _getCrops(String category) async {
-    try {
-      QuerySnapshot cropSnapshot = await FirebaseFirestore.instance
-          .collection('FormCropDetail')
-          .where('cropType', isEqualTo: category)
-          .get();
-      setState(() {
-        productsList = cropSnapshot.docs.map((doc) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          data['id'] = doc.id;
-          return data;
-        }).toList();
-        isLoading = false;
-      });
-      //print(productsList);
-    } catch (e) {
-      setState(() {
-        errorMessage = 'Error fetching crops for $category: $e';
-        isLoading = false;
-      });
-      logger.e('Error fetching crops: $e');
-    }
-  }
-
-  Future<void> addCartItem(String productId, String productName, int price,
-      String pImage, String address) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('carts')
-          .doc(widget.user!.uid)
-          .collection('item')
-          .add({
-        'productid': productId,
-        'productname': productName,
-        'productPrice': price,
-        'productImage': pImage,
-        'quantity': 1,
-        'address': address,
-      });
-      setState(() {
-        cartItemCount++; // Increment the cart item count
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Item added to cart!')),
-        );
-      }
-    } catch (e) {
-      logger.e('Error adding item to cart: $e');
-    }
-  }
+  late CategoryController categoryController;
 
   @override
   void initState() {
     super.initState();
-    _getCrops(widget.cropType!);
+    categoryController = Get.put(
+        CategoryController(user: widget.user, cropType: widget.cropType));
   }
 
   @override
@@ -93,36 +43,34 @@ class _CategorysState extends State<Categorys> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
                 color: Colors.black),
             onPressed: () {
-              Navigator.pop(context);
+              Get.back();
             },
           ),
           actions: [
             IconButton(
               icon: const Icon(Icons.shopping_cart, color: Colors.black),
               onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Cart(
-                        user: FirebaseAuth.instance.currentUser!,
-                      ),
-                    ));
+                Get.to(
+                  Cart(
+                    user: FirebaseAuth.instance.currentUser!,
+                  ),
+                );
               },
             ),
           ],
           elevation: 0,
         ),
-        body: SingleChildScrollView(
-          child: Column(
+        body: SingleChildScrollView(child: Obx(() {
+          return Column(
             children: [
               // GridView for displaying products
-              if (isLoading)
+              if (categoryController.isLoading.value)
                 const Center(
                   child: CircularProgressIndicator(),
                 )
-              else if (errorMessage.isNotEmpty)
+              else if (categoryController.errorMessage.value.isNotEmpty)
                 Center(
-                  child: Text(errorMessage,
+                  child: Text(categoryController.errorMessage.value,
                       style: const TextStyle(color: Colors.red)),
                 )
               else
@@ -137,36 +85,33 @@ class _CategorysState extends State<Categorys> {
                     mainAxisSpacing: 10.0,
                     childAspectRatio: 0.75, // Aspect ratio for the grid items
                   ),
-                  itemCount: productsList.length,
+                  itemCount: categoryController.productsList.length,
                   itemBuilder: (context, index) {
-                    return buildFeaturedProduct(
+                    return buildCategoryProduct(
                       context,
-                      productsList[index]['Variety'],
-                      productsList[index]['Crop Image'],
-                      productsList[index]['Price'],
-                      productsList[index]['id'],
-                      productsList[index]['Address'],
+                      categoryController.productsList[index]['Variety'],
+                      categoryController.productsList[index]['Crop Image'],
+                      categoryController.productsList[index]['Price'],
+                      categoryController.productsList[index]['id'],
+                      categoryController.productsList[index]['Address'],
                     );
                   },
                 ),
             ],
-          ),
-        ));
+          );
+        })));
   }
 }
 
-Widget buildFeaturedProduct(BuildContext context, String name, String imageUrl,
+Widget buildCategoryProduct(BuildContext context, String name, String imageUrl,
     int price, String productId, String address) {
   double screenHeight = MediaQuery.of(context).size.height;
   return GestureDetector(
     onTap: () {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => ProductDetailPage(
-                    user: FirebaseAuth.instance.currentUser!,
-                    productId: productId,
-                  )));
+      Get.to(ProductDetailPage(
+        user: FirebaseAuth.instance.currentUser!,
+        productId: productId,
+      ));
     },
     child: Card(
       elevation: 8, // Adds shadow intensity
@@ -227,7 +172,8 @@ Widget buildFeaturedProduct(BuildContext context, String name, String imageUrl,
                       const Icon(Icons.add_circle_outline, color: Colors.brown),
                   onPressed: () {
                     // Add to cart or handle other functionality
-                    //addCartItem(productId, name, price, imageUrl, address);
+                    cartController.addCartItem(
+                        productId, name, price, imageUrl, address);
                   },
                 ),
               ],
