@@ -282,16 +282,16 @@ class CartState extends State<Cart> {
           ),
         ),
         const SizedBox(height: 8),
-        SingleChildScrollView(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Text(
                 address,
                 style: const TextStyle(fontSize: 14),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Row(
