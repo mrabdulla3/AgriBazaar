@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:agribazar/controllers/buyer_controller/profile_controller.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:get/instance_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:logger/logger.dart';
 
 class Profile extends StatefulWidget {
   final User? user;
@@ -16,101 +17,11 @@ class Profile extends StatefulWidget {
 }
 
 class ProfileState extends State<Profile> {
-  Map<String, dynamic>? userProfileData;
-  bool isEditing = false;
-  bool isUploading = false;
-  TextEditingController nameController = TextEditingController();
-  TextEditingController phoneController = TextEditingController();
-  TextEditingController addressController = TextEditingController();
-
-  String? profileImageUrl;
-  String? newProfileImageUrl; // Temporary image URL for editing
-  File? selectedImage; // To store selected image locally
-  final ImagePicker _picker = ImagePicker();
-  var logger = Logger();
+  late ProfileController profileController;
   @override
   void initState() {
     super.initState();
-    if (widget.user != null) {
-      _getUserProfileData();
-    }
-  }
-
-  Future<void> _getUserProfileData() async {
-    try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.user!.uid)
-          .get();
-
-      if (userDoc.exists) {
-        setState(() {
-          userProfileData = userDoc.data() as Map<String, dynamic>;
-
-          nameController.text = userProfileData!['name'] ?? "";
-          addressController.text = userProfileData!['address'] ?? '';
-          phoneController.text = userProfileData!['phone'] ?? '';
-          profileImageUrl = userProfileData!['profileImageUrl'];
-        });
-      }
-    } catch (e) {
-      logger.e('Error fetching user profile data: $e');
-    }
-  }
-
-  Future<void> _saveProfileData() async {
-    setState(() {
-      isUploading = true;
-    });
-
-    try {
-      // Only upload the image if it has been edited (i.e., selectedImage is not null)
-      if (selectedImage != null) {
-        String fileName = '${widget.user!.uid}/profile_image.png';
-        UploadTask uploadTask = FirebaseStorage.instance
-            .ref()
-            .child('profilePictures')
-            .child(fileName)
-            .putFile(selectedImage!);
-
-        TaskSnapshot snapshot = await uploadTask;
-        newProfileImageUrl = await snapshot.ref.getDownloadURL();
-        profileImageUrl = newProfileImageUrl; // Update profile image URL
-      }
-      // Save profile data (including the new profile image if it was updated)
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.user!.uid)
-          .update({
-        'name': nameController.text,
-        'address': addressController.text,
-        'phone': phoneController.text,
-        'profileImageUrl': profileImageUrl,
-      });
-
-      setState(() {
-        isEditing = false;
-      });
-    } catch (e) {
-      logger.e('Error saving profile data: $e');
-    } finally {
-      setState(() {
-        isUploading = false; // Reset uploading flag
-      });
-    }
-  }
-
-  Future<void> _pickImage() async {
-    try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        setState(() {
-          selectedImage = File(image.path); // Store selected image locally
-        });
-      }
-    } catch (e) {
-      logger.e('Error selecting profile image: $e');
-    }
+    profileController = Get.put(ProfileController(user: widget.user));
   }
 
   @override
@@ -124,7 +35,7 @@ class ProfileState extends State<Profile> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
-            Navigator.of(context).pop();
+            Get.back();
           },
         ),
       ),
@@ -149,83 +60,101 @@ class ProfileState extends State<Profile> {
                 children: [
                   Stack(
                     children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundImage: selectedImage != null
-                            ? FileImage(selectedImage!) // Show selected image
-                            : profileImageUrl != null
-                                ? NetworkImage(profileImageUrl!)
-                                : null, // Show uploaded image
-                        child: selectedImage == null && profileImageUrl == null
-                            ? const Icon(Icons.camera_alt, size: 40)
-                            : null,
-                      ),
+                      Obx(() => CircleAvatar(
+                            radius: 40,
+                            backgroundImage: profileController
+                                        .selectedImage.value !=
+                                    null
+                                ? FileImage(profileController.selectedImage
+                                    .value as File) // Show selected image
+                                : profileController
+                                        .profileImageUrl.value.isNotEmpty
+                                    ? NetworkImage(
+                                        profileController.profileImageUrl.value)
+                                    : null, // Show uploaded image
+                            child: profileController.selectedImage.value ==
+                                        null &&
+                                    profileController.profileImageUrl.isEmpty
+                                ? const Icon(Icons.camera_alt, size: 40)
+                                : null,
+                          )),
                       // Only show edit icon if in editing mode
-                      if (isEditing)
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: _pickImage,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  width: 1.5,
-                                  color: Colors.grey,
+                      Obx(() {
+                        return profileController.isEditing.value
+                            ? Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: profileController.pickImage,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        width: 1.5,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    padding: const EdgeInsets.all(5),
+                                    child: const Icon(
+                                      Icons.edit,
+                                      color: Color.fromARGB(255, 106, 105, 102),
+                                      size: 20,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              padding: const EdgeInsets.all(5),
-                              child: const Icon(
-                                Icons.edit,
-                                color: Color.fromARGB(255, 106, 105, 102),
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (isUploading)
-                        const Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          top: 0,
-                          child: Center(
-                            child:
-                                CircularProgressIndicator(), // Show loading indicator while uploading
-                          ),
-                        ),
+                              )
+                            : const SizedBox.shrink();
+                      }),
+                      Obx(
+                        () {
+                          return profileController.isUploading.value
+                              ? const Positioned(
+                                  bottom: 0,
+                                  left: 0,
+                                  right: 0,
+                                  top: 0,
+                                  child: Center(
+                                    child:
+                                        CircularProgressIndicator(), // Show loading indicator while uploading
+                                  ),
+                                )
+                              : const SizedBox.shrink();
+                        },
+                      )
                     ],
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    userProfileData != null
-                        ? userProfileData!['name'] ??
-                            widget.user!.displayName ??
-                            'Unknown'
-                        : 'Loading...',
-                    style: GoogleFonts.abhayaLibre(
-                      textStyle: const TextStyle(
-                          fontSize: 20,
-                          letterSpacing: .5,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
-                    ),
-                  ),
+                  Obx(() {
+                    return Text(
+                      profileController.userProfileData != null
+                          ? profileController.userProfileData!['name'] ??
+                              widget.user!.displayName ??
+                              'Unknown'
+                          : 'Loading...',
+                      style: GoogleFonts.abhayaLibre(
+                        textStyle: const TextStyle(
+                            fontSize: 20,
+                            letterSpacing: .5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                      ),
+                    );
+                  })
                 ],
               ),
             ),
             const SizedBox(height: 20),
-
             // User Information
             widget.user != null
                 ? Column(
                     children: [
-                      buildProfileInfo(Icons.person, nameController, 'Name'),
-                      buildProfileInfo(
-                          Icons.location_on, addressController, 'Address'),
-                      buildProfileInfo(Icons.phone, phoneController, 'Phone'),
+                      buildProfileInfo(Icons.person,
+                          profileController.nameController, 'Name'),
+                      buildProfileInfo(Icons.location_on,
+                          profileController.addressController, 'Address'),
+                      buildProfileInfo(Icons.phone,
+                          profileController.phoneController, 'Phone'),
                       buildProfileInfo(
                         Icons.email,
                         TextEditingController(text: widget.user!.email),
@@ -238,35 +167,37 @@ class ProfileState extends State<Profile> {
 
             const SizedBox(height: 20),
             if (widget.user != null)
-              ElevatedButton(
-                onPressed: () {
-                  if (isEditing) {
-                    _saveProfileData(); // Save data if editing
-                  } else {
-                    setState(() {
-                      isEditing = true; // Enable editing mode
-                    });
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+              Obx(() {
+                return ElevatedButton(
+                  onPressed: () {
+                    if (profileController.isEditing.value) {
+                      profileController
+                          .saveProfileData(); // Save data if editing
+                    } else {
+                      profileController.isEditing.value =
+                          true; // Enable editing mode
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 15),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                ),
-                child: Text(
-                  isEditing ? 'Save' : 'Edit profile',
-                  style: GoogleFonts.abhayaLibre(
-                    textStyle: const TextStyle(
-                        fontSize: 18,
-                        letterSpacing: .5,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
+                  child: Text(
+                    profileController.isEditing.value ? 'Save' : 'Edit profile',
+                    style: GoogleFonts.abhayaLibre(
+                      textStyle: const TextStyle(
+                          fontSize: 18,
+                          letterSpacing: .5,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                    ),
                   ),
-                ),
-              ),
+                );
+              })
           ],
         ),
       ),
@@ -283,7 +214,8 @@ class ProfileState extends State<Profile> {
           Icon(icon, color: Colors.amber),
           const SizedBox(width: 20),
           Expanded(
-            child: TextFormField(
+              child: Obx(
+            () => TextFormField(
               controller: controller,
               decoration: const InputDecoration(
                 labelStyle: TextStyle(color: Colors.amber),
@@ -291,9 +223,9 @@ class ProfileState extends State<Profile> {
                   borderSide: BorderSide(color: Colors.amber),
                 ),
               ),
-              readOnly: !isEditing || readOnly,
+              readOnly: !profileController.isEditing.value || readOnly,
             ),
-          ),
+          )),
         ],
       ),
     );
