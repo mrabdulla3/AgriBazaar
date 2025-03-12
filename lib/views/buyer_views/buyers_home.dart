@@ -1,3 +1,4 @@
+import 'package:agribazar/controllers/buyer_controller/cart_controller.dart';
 import 'package:agribazar/controllers/buyer_controller/home_controller.dart';
 import 'package:agribazar/views/buyer_views/cart.dart';
 import 'package:agribazar/views/buyer_views/category.dart';
@@ -16,6 +17,7 @@ import 'package:google_fonts/google_fonts.dart';
 class MarketHomePage extends StatelessWidget {
   final User? user;
   final HomeController homeController = Get.put(HomeController());
+  final CartController cartController = Get.put(CartController());
 
   MarketHomePage({this.user, super.key});
 
@@ -165,7 +167,7 @@ class MarketHomePage extends StatelessWidget {
                     ),
                     itemCount: homeController.featuredProducts.length,
                     itemBuilder: (context, index) {
-                      //print(homeController.featuredProducts[index]['Variety']);
+                      //print(homeController.featuredProducts[index]['Crop Image']);
                       return buildFeaturedProduct(
                         homeController.featuredProducts[index]['Variety'],
                         homeController.featuredProducts[index]['Crop Image'],
@@ -192,7 +194,7 @@ class MarketHomePage extends StatelessWidget {
             icon: IconButton(
               icon: const Icon(Icons.home),
               onPressed: () {
-                Get.to(MarketHomePage());
+                Get.to(() => MarketHomePage());
               },
             ),
             label: 'Home',
@@ -202,7 +204,7 @@ class MarketHomePage extends StatelessWidget {
               icon: const Icon(Icons.shopping_cart),
               onPressed: () {
                 Get.to(
-                  Cart(
+                  () => Cart(
                     user: user!,
                   ),
                 );
@@ -214,7 +216,7 @@ class MarketHomePage extends StatelessWidget {
             icon: IconButton(
               icon: const Icon(Icons.monetization_on),
               onPressed: () {
-                Get.to(const Pricing());
+                Get.to(() => const Pricing());
               },
             ),
             label: 'Pricing',
@@ -225,7 +227,7 @@ class MarketHomePage extends StatelessWidget {
               onPressed: () {
                 if (user != null) {
                   Get.to(
-                    Profile(
+                    () => Profile(
                       user: user!, // Pass the user if not null
                     ),
                   );
@@ -341,7 +343,7 @@ class MarketHomePage extends StatelessWidget {
                         color: Colors.brown),
                     onPressed: () {
                       // Add to cart or handle other functionality
-                      homeController.addCartItem(
+                      cartController.addCartItem(
                           productId, name, price, imageUrl, address);
                     },
                   ),

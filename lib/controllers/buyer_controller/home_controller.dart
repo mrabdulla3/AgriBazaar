@@ -7,15 +7,29 @@ import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 
 class HomeController extends GetxController {
+  RxInt cartItemCount = 0.obs;
   Rx<User?> user = FirebaseAuth.instance.currentUser.obs;
   RxList<Map<String, dynamic>> featuredProducts = RxList([]);
   RxBool isLoading = false.obs;
   RxString errorMessage = ''.obs;
-  RxInt cartItemCount = 0.obs;
   TextEditingController searchController = TextEditingController();
   RxList<Map<String, dynamic>> searchResult = RxList([]);
   RxBool isSearching = false.obs;
   final Logger logger = Logger();
+
+  /// Update Cart Item Count from Firestore
+  void updateCartItemCount() {
+    if (user.value == null) return;
+
+    FirebaseFirestore.instance
+        .collection('carts')
+        .doc(user.value!.uid)
+        .collection('item')
+        .snapshots()
+        .listen((snapshot) {
+      cartItemCount.value = snapshot.docs.length;
+    });
+  }
 
   /// Fetch Crops Data from Firestore
   Future<void> _getCrops() async {
@@ -30,7 +44,6 @@ class HomeController extends GetxController {
         data['id'] = doc.id;
         return data;
       }).toList();
-      //logger.i('Crops fetched successfully: ${featuredProducts.length} items');
       //print(featuredProducts[0]['Description']);
     } catch (e) {
       errorMessage.value = 'Error fetching products: $e';
@@ -38,50 +51,6 @@ class HomeController extends GetxController {
     } finally {
       isLoading.value = false;
     }
-  }
-
-  /// Add item to Cart
-  Future<void> addCartItem(String productId, String productName, int price,
-      String pImage, String address) async {
-    if (user.value == null) {
-      Get.snackbar('Error', 'User not logged in.');
-      return;
-    }
-
-    try {
-      await FirebaseFirestore.instance
-          .collection('carts')
-          .doc(user.value!.uid)
-          .collection('item')
-          .add({
-        'productid': productId,
-        'productname': productName,
-        'productPrice': price,
-        'productImage': pImage,
-        'quantity': 1,
-        'address': address,
-      });
-
-      _updateCartItemCount();
-      Get.snackbar('Success', 'Item added to cart!');
-    } catch (e) {
-      logger.e('Error adding item to cart: $e');
-      Get.snackbar('Error', 'Failed to add item to cart.');
-    }
-  }
-
-  /// Update Cart Item Count from Firestore
-  void _updateCartItemCount() {
-    if (user.value == null) return;
-
-    FirebaseFirestore.instance
-        .collection('carts')
-        .doc(user.value!.uid)
-        .collection('item')
-        .snapshots()
-        .listen((snapshot) {
-      cartItemCount.value = snapshot.docs.length;
-    });
   }
 
   /// Search Products by Name
@@ -109,6 +78,6 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     _getCrops();
-    _updateCartItemCount();
+    updateCartItemCount();
   }
 }
