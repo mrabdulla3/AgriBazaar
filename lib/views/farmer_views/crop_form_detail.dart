@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:agribazar/controllers/farmer_controller/crop_form_controller.dart';
+import 'package:agribazar/controllers/farmer_controller/crop_form_detail_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';

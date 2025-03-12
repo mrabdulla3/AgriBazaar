@@ -1,7 +1,11 @@
+import 'package:agribazar/Buyers/chat_screen.dart';
+import 'package:agribazar/controllers/farmer_controller/chat_message_controller.dart';
 import 'package:agribazar/views/buyer_views/chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ChatMessageFarmer extends StatefulWidget {
@@ -12,10 +16,7 @@ class ChatMessageFarmer extends StatefulWidget {
 }
 
 class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
-  final String farmerId = FirebaseAuth.instance.currentUser!.uid;
-  String searchQuery = '';
-  TextEditingController searchController = TextEditingController();
-  bool isSearching = false;
+  final chatMessage = Get.put(ChatMessageController());
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +25,14 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: isSearching
+        title: chatMessage.isSearching.value
             ? TextField(
                 autocorrect: true,
                 autofocus: true,
                 onChanged: (value) {
-                  setState(() {
-                    searchQuery = value.toLowerCase();
-                  });
+                  
+                    chatMessage.searchQuery.value = value.toLowerCase();
+                  
                 },
                 style: const TextStyle(color: Colors.black),
                 decoration: InputDecoration(

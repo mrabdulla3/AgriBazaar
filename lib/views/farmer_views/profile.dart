@@ -113,8 +113,8 @@ class ProfileFarmer extends StatelessWidget {
                     const SizedBox(height: 10),
                     Obx(
                       () => Text(
-                        profileController.userProfileData !=null
-                            ? (profileController.userProfileData!['name'] ??
+                        profileController.userProfileData.isNotEmpty
+                            ? (profileController.userProfileData['name'] ??
                                 profileController.user?.displayName ??
                                 'Unknown')
                             : 'Loading...',
