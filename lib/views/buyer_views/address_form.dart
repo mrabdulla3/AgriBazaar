@@ -1,6 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:agribazar/controllers/buyer_controller/address_controller.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class EditAddressPage extends StatefulWidget {
   final User user;
@@ -12,34 +13,11 @@ class EditAddressPage extends StatefulWidget {
 }
 
 class EditAddressPageState extends State<EditAddressPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _addressController = TextEditingController();
-
+  late AddressController addressController;
   @override
   void initState() {
     super.initState();
-    _loadUserAddress(); // Load the current address from Firestore
-  }
-
-  Future<void> _loadUserAddress() async {
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(widget.user.uid)
-        .get();
-
-    if (userDoc.exists) {
-      setState(() {
-        _addressController.text = userDoc.get('address') ?? '';
-      });
-    }
-  }
-
-  Future<void> _saveAddress() async {}
-
-  @override
-  void dispose() {
-    _addressController.dispose();
-    super.dispose();
+    addressController = Get.put(AddressController(user: widget.user));
   }
 
   @override
@@ -51,11 +29,11 @@ class EditAddressPageState extends State<EditAddressPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey,
+          key: addressController.formKey,
           child: Column(
             children: [
               TextFormField(
-                controller: _addressController,
+                controller: addressController.addressController,
                 decoration: const InputDecoration(
                     labelText: 'Address',
                     hintText: 'Enter your: Village, City, Pin Code, State',
@@ -69,7 +47,7 @@ class EditAddressPageState extends State<EditAddressPage> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _saveAddress,
+                onPressed: addressController.saveAddress,
                 child: const Text('Save Address'),
               ),
             ],

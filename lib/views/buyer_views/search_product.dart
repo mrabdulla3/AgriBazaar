@@ -1,9 +1,10 @@
+import 'package:agribazar/controllers/buyer_controller/cart_controller.dart';
 import 'package:agribazar/views/buyer_views/cart.dart';
 import 'package:agribazar/views/buyer_views/detailed_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:logger/logger.dart';
+import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:get/route_manager.dart';
 
 class SearchProduct extends StatefulWidget {
   final User? user;
@@ -15,36 +16,7 @@ class SearchProduct extends StatefulWidget {
 }
 
 class SearchProductState extends State<SearchProduct> {
-  String errorMessage = '';
-  int cartItemCount = 0; // Cart item count
-  var logger = Logger();
-
-  Future<void> addCartItem(String productId, String productName, int price,
-      String pImage, String address) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('carts')
-          .doc(widget.user!.uid)
-          .collection('item')
-          .add({
-        'productid': productId,
-        'productname': productName,
-        'productPrice': price,
-        'productImage': pImage,
-        'quantity': 1,
-        'address': address,
-      });
-      setState(() {
-        cartItemCount++; // Increment cart item count
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item added to cart!')),
-      );
-    } catch (e) {
-      logger.e('Error adding item to cart: $e');
-    }
-  }
+  CartController cartController = Get.put(CartController());
 
   @override
   Widget build(BuildContext context) {
@@ -60,19 +32,16 @@ class SearchProductState extends State<SearchProduct> {
           icon:
               const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
           onPressed: () {
-            Navigator.pop(context);
+            Get.back();
           },
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart, color: Colors.black),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Cart(
-                    user: FirebaseAuth.instance.currentUser!,
-                  ),
+              Get.to(
+                () => Cart(
+                  user: FirebaseAuth.instance.currentUser!,
                 ),
               );
             },
@@ -125,13 +94,10 @@ Widget buildFeaturedProduct(BuildContext context, String name, String imageUrl,
   double screenHeight = MediaQuery.of(context).size.height;
   return GestureDetector(
     onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProductDetailPage(
-            user: FirebaseAuth.instance.currentUser!,
-            productId: productId,
-          ),
+      Get.to(
+        () => ProductDetailPage(
+          user: FirebaseAuth.instance.currentUser!,
+          productId: productId,
         ),
       );
     },
@@ -196,8 +162,8 @@ Widget buildFeaturedProduct(BuildContext context, String name, String imageUrl,
                     // Call addCartItem function to add product to cart
                     // Ensure SearchProductState is accessed
                     (context.findAncestorStateOfType<SearchProductState>())
-                        ?.addCartItem(
-                            productId, name, price, imageUrl, address);
+                        ?.cartController
+                        .addCartItem(productId, name, price, imageUrl, address);
                   },
                 ),
               ],

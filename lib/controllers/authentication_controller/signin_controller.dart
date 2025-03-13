@@ -48,6 +48,7 @@ class SigninController extends GetxController {
       } else {
         Get.snackbar("Warning", "Check your internet connection!");
       }
+    } finally {
       isLoading.value = false;
     }
   }

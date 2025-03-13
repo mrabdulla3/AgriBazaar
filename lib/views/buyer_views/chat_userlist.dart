@@ -1,7 +1,8 @@
+import 'package:agribazar/controllers/buyer_controller/chat_userlist_controller.dart';
 import 'package:agribazar/views/buyer_views/chat_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 
 class ChatMessageBuyer extends StatefulWidget {
   const ChatMessageBuyer({super.key});
@@ -11,11 +12,8 @@ class ChatMessageBuyer extends StatefulWidget {
 }
 
 class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
-  final String buyerId = FirebaseAuth.instance.currentUser!.uid;
-  bool isSearching = false;
-  String searchQuery = '';
-  TextEditingController searchController = TextEditingController();
-
+  ChatUserlistController chatUserlistController =
+      Get.put(ChatUserlistController());
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,48 +21,46 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: isSearching
-            ? TextField(
-                controller: searchController,
-                autofocus: true,
-                onChanged: (value) {
-                  setState(() {
-                    searchQuery = value.toLowerCase();
-                  });
-                },
-                style: const TextStyle(color: Colors.black),
-                decoration: InputDecoration(
-                  hintText: "Search messages...",
-                  hintStyle: const TextStyle(color: Colors.black54),
-                  border: InputBorder.none,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.black),
-                    onPressed: () {
-                      setState(() {
-                        searchController.clear();
-                        searchQuery = '';
-                        isSearching = false;
-                      });
-                    },
+        title: Obx(
+          () => chatUserlistController.isSearching.value
+              ? TextField(
+                  controller: chatUserlistController.searchController,
+                  autofocus: true,
+                  onChanged: (value) {
+                    chatUserlistController.searchQuery.value =
+                        value.toLowerCase();
+                  },
+                  style: const TextStyle(color: Colors.black),
+                  decoration: InputDecoration(
+                    hintText: "Search messages...",
+                    hintStyle: const TextStyle(color: Colors.black54),
+                    border: InputBorder.none,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear, color: Colors.black),
+                      onPressed: () {
+                        chatUserlistController.searchController.clear();
+                        chatUserlistController.searchQuery.value = '';
+                        chatUserlistController.isSearching.value = false;
+                      },
+                    ),
                   ),
+                )
+              : const Text(
+                  'Messages',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
                 ),
-              )
-            : const Text(
-                'Messages',
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-              ),
+        ),
         centerTitle: true,
         actions: [
-          if (!isSearching)
-            IconButton(
-              icon: const Icon(Icons.search, color: Colors.black),
-              onPressed: () {
-                setState(() {
-                  isSearching = true;
-                });
-              },
-            ),
+          Obx(() => (!chatUserlistController.isSearching.value)
+              ? IconButton(
+                  icon: const Icon(Icons.search, color: Colors.black),
+                  onPressed: () {
+                    chatUserlistController.isSearching.value = true;
+                  },
+                )
+              : const SizedBox())
         ],
       ),
       body: Padding(
@@ -82,7 +78,7 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
                   }
                   // Filter chat room documents where the document ID ends with farmerId
                   final filteredRooms = snapshot.data!.docs.where((doc) {
-                    return doc.id.startsWith(buyerId);
+                    return doc.id.startsWith(chatUserlistController.buyerId);
                   }).toList();
                   // Check if filtered rooms are empty
                   if (filteredRooms.isEmpty) {
@@ -120,12 +116,10 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
                       List<ChatMessage> displayedMessages = messagesSnapshot
                           .data!
                           .where((message) =>
-                              message.username
-                                  .toLowerCase()
-                                  .contains(searchQuery) ||
-                              message.message
-                                  .toLowerCase()
-                                  .contains(searchQuery))
+                              message.username.toLowerCase().contains(
+                                  chatUserlistController.searchQuery.value) ||
+                              message.message.toLowerCase().contains(
+                                  chatUserlistController.searchQuery.value))
                           .toList();
 
                       if (displayedMessages.isEmpty) {
@@ -169,7 +163,7 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
           .collection('chatMessages')
           .doc(room.id)
           .collection('messages')
-          .where('senderId', isNotEqualTo: buyerId)
+          .where('senderId', isNotEqualTo: chatUserlistController.buyerId)
           .get();
 
       // Map to store latest message per senderId
@@ -263,13 +257,10 @@ class ChatItem extends StatelessWidget {
         // Ensure to navigate with the correct userId and chatRoomId
         //print(senderId);
         //print(chatRoomId);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ChatScreen(
-              userId: senderId, // Pass senderId directly
-              chatRoomId: chatRoomId, // Use the correct chatRoomId
-            ),
+        Get.to(
+          () => ChatScreen(
+            userId: senderId, // Pass senderId directly
+            chatRoomId: chatRoomId, // Use the correct chatRoomId
           ),
         );
       },

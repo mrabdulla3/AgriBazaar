@@ -1,9 +1,10 @@
+import 'package:agribazar/controllers/buyer_controller/cart_controller.dart';
 import 'package:agribazar/views/buyer_views/address_form.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:agribazar/views/buyer_views/order_successfull.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:logger/logger.dart';
 
 class Cart extends StatefulWidget {
   final User? user;
@@ -13,83 +14,16 @@ class Cart extends StatefulWidget {
 }
 
 class CartState extends State<Cart> {
-  List<Map<String, dynamic>> cartProducts = [];
-  bool isPickup = false;
-  double deliveryCharge = 30.00;
-  var logger = Logger();
+  final CartController cartController = Get.put(CartController());
 
   @override
   void initState() {
     super.initState();
-    getCartItem();
-  }
-
-  Future<void> getCartItem() async {
-    try {
-      QuerySnapshot cartItem = await FirebaseFirestore.instance
-          .collection('carts')
-          .doc(widget.user!.uid)
-          .collection('item')
-          .get();
-
-      setState(() {
-        cartProducts = cartItem.docs.map((doc) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-
-          double productPrice = (data['productPrice'] is int)
-              ? (data['productPrice'] as int).toDouble()
-              : (data['productPrice'] as double? ?? 0.0);
-
-          return {
-            'documentId': doc.id,
-            'productImage': data['productImage'] ?? 'assets/splashImg.jpg',
-            'address': data['address'] ?? '149, Sunset Ave, Los Angeles, CA',
-            'productname': data['productname'] ?? 'Unknown Product',
-            'productPrice': productPrice,
-            'quantity': data['quantity'] is int ? data['quantity'] : 1,
-          };
-        }).toList();
-      });
-    } catch (e) {
-      logger.e("Error fetching cart items: $e");
-    }
-  }
-
-  void removeCartItem(int index) async {
-    try {
-      String docId = cartProducts[index]['documentId'];
-      await FirebaseFirestore.instance
-          .collection('carts')
-          .doc(widget.user!.uid)
-          .collection('item')
-          .doc(docId)
-          .delete();
-
-      setState(() {
-        cartProducts.removeAt(index);
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Cart item removed')));
-      }
-    } catch (e) {
-      //print("Error deleting cart item: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to remove item')));
-      }
-    }
+    cartController.calculateSubtotal();
   }
 
   @override
   Widget build(BuildContext context) {
-    double subtotal = 0.0;
-    for (var p in cartProducts) {
-      double productPrice = p['productPrice'] * p['quantity'];
-      subtotal += productPrice;
-    }
-    double total = subtotal + (isPickup ? 0 : deliveryCharge);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -108,8 +42,8 @@ class CartState extends State<Cart> {
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
+      body: SingleChildScrollView(child: Obx(() {
+        return Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
@@ -120,71 +54,73 @@ class CartState extends State<Cart> {
               const SizedBox(height: 20),
               _buildDeliveryDetails(),
               const SizedBox(height: 20),
-              _buildPriceDetails(subtotal, total),
+              _buildPriceDetails(
+                  cartController.subtotal.value, cartController.total.value),
             ],
           ),
-        ),
-      ),
+        );
+      })),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: _buildPaymentButton(total),
+        child: _buildPaymentButton(cartController.total.value),
       ),
     );
   }
 
   Widget _buildCartItems() {
-    if (cartProducts.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.shopping_cart, size: 100, color: Colors.grey),
-            const SizedBox(height: 20),
-            Text(
-              "Your cart is empty",
-              style: GoogleFonts.abhayaLibre(
-                textStyle: const TextStyle(
-                    fontSize: 20,
-                    letterSpacing: .5,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      return Column(
-        children: cartProducts.asMap().entries.map((entry) {
-          int index = entry.key;
-          var product = entry.value;
-          return Column(
+    return Obx(() {
+      if (cartController.cartProducts.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildCartItem(
-                index: index, // Pass index here
-                imageUrl: product['productImage'] ?? 'assets/splashImg.jpg',
-                title: product['productname'] ?? 'Unknown Product',
-                price: product['productPrice'] ?? 0.0,
-                quantity: product['quantity'] ?? 1,
-                onAdd: () {
-                  setState(() {
-                    product['quantity']++;
-                  });
-                },
-                onRemove: () {
-                  if (product['quantity'] > 1) {
-                    setState(() {
-                      product['quantity']--;
-                    });
-                  }
-                },
+              const Icon(Icons.shopping_cart, size: 100, color: Colors.grey),
+              const SizedBox(height: 20),
+              Text(
+                "Your cart is empty",
+                style: GoogleFonts.abhayaLibre(
+                  textStyle: const TextStyle(
+                      fontSize: 20,
+                      letterSpacing: .5,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey),
+                ),
               ),
-              const Divider(),
             ],
-          );
-        }).toList(),
-      );
-    }
+          ),
+        );
+      } else {
+        return Column(
+          children: cartController.cartProducts.asMap().entries.map((entry) {
+            int index = entry.key;
+            var product = entry.value;
+            //print(product);
+            return Column(
+              children: [
+                _buildCartItem(
+                  index: index, // Pass index here
+                  imageUrl: product['productImage'] ?? 'assets/splashImg.jpg',
+                  title: product['productname'] ?? 'Unknown Product',
+                  price: product['productPrice'] ?? 0.0,
+                  quantity: product['quantity'] ?? 1,
+                  onAdd: () {
+                    cartController.updateQuantity(
+                        index, product['quantity'] + 1);
+                  },
+                  onRemove: () {
+                    if (product['quantity'] > 1) {
+                      cartController.updateQuantity(
+                          index, product['quantity'] - 1);
+                    }
+                  },
+                ),
+                const Divider(),
+              ],
+            );
+          }).toList(),
+        );
+      }
+    });
   }
 
   Widget _buildCartItem({
@@ -253,7 +189,7 @@ class CartState extends State<Cart> {
                 width: screenWidth * 0.45,
                 child: OutlinedButton(
                     onPressed: () {
-                      removeCartItem(index);
+                      cartController.removeCartItem(index);
                     },
                     child: Text(
                       'Remove',
@@ -289,8 +225,8 @@ class CartState extends State<Cart> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildDeliveryTypeButton("Pickup", isPickup),
-        _buildDeliveryTypeButton("Delivery", !isPickup),
+        _buildDeliveryTypeButton("Pickup", cartController.isPickup.value),
+        _buildDeliveryTypeButton("Delivery", !cartController.isPickup.value),
       ],
     );
   }
@@ -299,9 +235,8 @@ class CartState extends State<Cart> {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          setState(() {
-            isPickup = title == "Pickup";
-          });
+          cartController.isPickup.value = title == "Pickup";
+          cartController.calculateSubtotal();
         },
         child: Container(
           decoration: BoxDecoration(
@@ -326,12 +261,12 @@ class CartState extends State<Cart> {
   }
 
   Widget _buildDeliveryDetails() {
-    if (cartProducts.isEmpty) {
+    if (cartController.cartProducts.isEmpty) {
       return const Center(
         child: Text("No products in the cart."),
       );
     }
-    String address = cartProducts.first['address'];
+    String address = cartController.cartProducts.first['address'];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,9 +285,11 @@ class CartState extends State<Cart> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              address,
-              style: const TextStyle(fontSize: 14),
+            Flexible(
+              child: Text(
+                address,
+                style: const TextStyle(fontSize: 14),
+              ),
             ),
           ],
         ),
@@ -370,12 +307,7 @@ class CartState extends State<Cart> {
               },
               child: TextButton(
                   onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EditAddressPage(user: widget.user!),
-                        ));
+                    Get.to(EditAddressPage(user: widget.user!));
                   },
                   child: const Text(
                     'Edit',
@@ -407,16 +339,17 @@ class CartState extends State<Cart> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text("Subtotal"),
-            Text("Rs. ${subtotal.toStringAsFixed(2)}"),
+            Text("Rs. ${cartController.subtotal.value.toStringAsFixed(2)}"),
           ],
         ),
         const SizedBox(height: 8),
-        if (!isPickup)
+        if (!cartController.isPickup.value)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("Delivery Charge"),
-              Text("Rs. ${deliveryCharge.toStringAsFixed(2)}"),
+              Text(
+                  "Rs. ${cartController.deliveryCharge.value.toStringAsFixed(2)}"),
             ],
           ),
         const SizedBox(height: 8),
@@ -434,7 +367,7 @@ class CartState extends State<Cart> {
               ),
             ),
             Text(
-              "Rs. ${total.toStringAsFixed(2)}",
+              "Rs. ${cartController.total.value.toStringAsFixed(2)}",
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
@@ -445,24 +378,27 @@ class CartState extends State<Cart> {
 
   Widget _buildPaymentButton(double total) {
     return ElevatedButton(
-      onPressed: () {
-        // Handle payment logic here
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.amber,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-      ),
-      child: Text(
-        "Pay Now Rs. ${total.toStringAsFixed(2)}",
-        style: GoogleFonts.abhayaLibre(
-          textStyle: const TextStyle(
-              fontSize: 20,
-              letterSpacing: .5,
-              fontWeight: FontWeight.bold,
-              color: Colors.black),
+        onPressed: () {
+          // Handle payment logic here
+          Get.to(() => const OrderSuccessScreen());
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.amber,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          padding: const EdgeInsets.symmetric(vertical: 16),
         ),
-      ),
-    );
+        child: Obx(
+          () => Text(
+            "Pay Now Rs. ${cartController.total.toStringAsFixed(2)}",
+            style: GoogleFonts.abhayaLibre(
+              textStyle: const TextStyle(
+                  fontSize: 20,
+                  letterSpacing: .5,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
+            ),
+          ),
+        ));
   }
 }
