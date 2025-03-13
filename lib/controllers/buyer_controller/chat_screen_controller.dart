@@ -94,4 +94,18 @@ class ChatScreenController extends GetxController {
       logger.e('Error sending message: $e');
     }
   }
+
+  Future<void> deleteMessage(String messageId) async {
+    try {
+      DocumentReference msgRef = FirebaseFirestore.instance
+          .collection('chatMessages')
+          .doc(chatRoomId)
+          .collection('messages')
+          .doc(messageId);
+      await msgRef.delete();
+      logger.i('Message deleted successfully');
+    } catch (e) {
+      logger.e('Error deleting message: $e');
+    }
+  }
 }

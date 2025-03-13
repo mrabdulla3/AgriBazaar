@@ -20,7 +20,6 @@ class CartState extends State<Cart> {
   void initState() {
     super.initState();
     cartController.calculateSubtotal();
-    cartController.getCartItem();
   }
 
   @override

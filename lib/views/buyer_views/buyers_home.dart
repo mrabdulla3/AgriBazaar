@@ -343,6 +343,7 @@ class MarketHomePage extends StatelessWidget {
                         color: Colors.brown),
                     onPressed: () {
                       // Add to cart or handle other functionality
+                      // print("Home : $price");
                       cartController.addCartItem(
                           productId, name, price, imageUrl, address);
                     },

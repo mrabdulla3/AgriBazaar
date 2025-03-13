@@ -2,8 +2,7 @@ import 'package:agribazar/controllers/buyer_controller/chat_screen_controller.da
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
-import 'package:get/instance_manager.dart';
+import 'package:get/get.dart';
 
 class ChatScreen extends StatefulWidget {
   final String? chatRoomId;
@@ -86,6 +85,7 @@ class ChatScreenState extends State<ChatScreen> {
                             itemCount: allMessages.length,
                             itemBuilder: (context, index) {
                               var messageData = allMessages[index];
+                              String messageId = messageData.id;
                               String messageText = messageData['message'] ?? '';
                               String senderId = messageData['senderId'] ?? '';
                               Timestamp timestamp = messageData['time'];
@@ -106,24 +106,29 @@ class ChatScreenState extends State<ChatScreen> {
                                         : Colors.grey[300],
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment: isSentByMe
-                                        ? CrossAxisAlignment.end
-                                        : CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        messageText,
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                      const SizedBox(height: 3),
-                                      Text(
-                                        "${time.hour}:${time.minute}",
-                                        style: const TextStyle(
-                                          fontSize: 10,
-                                          color: Colors.grey,
+                                  child: GestureDetector(
+                                    onLongPress: () {
+                                      showDeleteDialog(context, messageId);
+                                    },
+                                    child: Column(
+                                      crossAxisAlignment: isSentByMe
+                                          ? CrossAxisAlignment.end
+                                          : CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          messageText,
+                                          style: const TextStyle(fontSize: 16),
                                         ),
-                                      )
-                                    ],
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          "${time.hour}:${time.minute}",
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.grey,
+                                          ),
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );
@@ -166,5 +171,26 @@ class ChatScreenState extends State<ChatScreen> {
                   ],
                 ),
         ));
+  }
+
+  void showDeleteDialog(BuildContext context, String messageId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Delete Message?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                chatScreenController
+                    .deleteMessage(messageId); // Call the delete function
+                Get.back();
+              },
+              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

@@ -40,6 +40,7 @@ class CartController extends GetxController {
   }
 
   void calculateSubtotal() {
+    getCartItem();
     subtotal.value = cartProducts.fold(
         0.0, (sum, p) => sum + (p['productPrice'] * p['quantity']));
     total.value = subtotal.value + (isPickup.value ? 0 : deliveryCharge.value);
@@ -95,7 +96,6 @@ class CartController extends GetxController {
       calculateSubtotal();
       Get.snackbar('Success', 'Cart item removed');
     } catch (e) {
-      //print("Error deleting cart item: $e");
       Get.snackbar('Warning', 'Failed to remove item');
     }
   }
