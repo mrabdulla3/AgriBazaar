@@ -1,123 +1,53 @@
+import 'package:agribazar/controllers/farmer_controller/chat_screen_controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:logger/logger.dart';
 
-class ChatScreenFarmer extends StatefulWidget {
+
+class ChatScreenFarmer extends StatelessWidget {
   final String? chatRoomId;
   final String? userId;
 
-  const ChatScreenFarmer(
-      {required this.userId, required this.chatRoomId, super.key});
+  ChatScreenFarmer({super.key, required this.userId, required this.chatRoomId});
 
-  @override
-  ChatScreenState createState() => ChatScreenState();
-}
-
-class ChatScreenState extends State<ChatScreenFarmer> {
-  final TextEditingController _messageController = TextEditingController();
-  Map<String, dynamic>? userProfileData;
-  var logger = Logger();
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.userId != null) {
-      _getUserProfileData();
-    }
-  }
-
-  Future<void> _getUserProfileData() async {
-    try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.userId)
-          .get();
-
-      if (userDoc.exists) {
-        setState(() {
-          userProfileData = userDoc.data() as Map<String, dynamic>;
-        });
-      }
-      // print(userProfileData);
-    } catch (e) {
-      logger.e('Error fetching user profile data: $e');
-    }
-  }
-
-  // Function to send a message
-  // Function to send a message
-  Future<void> _sendMessage() async {
-    try {
-      String msg = _messageController.text.trim();
-      if (msg.isNotEmpty) {
-        // Check if the chat room document exists
-        DocumentReference chatRoomRef = FirebaseFirestore.instance
-            .collection('chatMessages')
-            .doc(widget.chatRoomId);
-
-        DocumentSnapshot chatRoomSnapshot = await chatRoomRef.get();
-
-        // If the document does not exist, create it
-        if (!chatRoomSnapshot.exists) {
-          await chatRoomRef.set({
-            'created_at': FieldValue.serverTimestamp(),
-            'participants': [
-              FirebaseAuth.instance.currentUser!.uid,
-              widget.userId
-            ],
-          });
-        }
-
-        // Now add the message to the messages subcollection
-        await chatRoomRef.collection('messages').add({
-          'receiverId': FirebaseAuth.instance.currentUser!.uid,
-          'message': msg,
-          'time': DateTime.now(),
-          'receiverName': userProfileData!['name'],
-          'receiverProfilePic': userProfileData!['profileImageUrl'],
-          'userType': userProfileData!['userType']
-        });
-
-        setState(() {
-          _messageController.clear();
-        });
-      }
-    } catch (e) {
-      logger.e('Error sending message: $e');
-    }
-  }
+  
 
   @override
   Widget build(BuildContext context) {
+    // Inject userId and chatRoomId into the controller
+    final chatController = Get.put(ChatScreenController(userId, chatRoomId));
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.amberAccent,
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundImage: userProfileData != null &&
-                      userProfileData!['profileImageUrl'] != null
-                  ? NetworkImage(userProfileData!['profileImageUrl'])
-                  : const AssetImage('assets/splashImg.jpg') as ImageProvider,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                userProfileData!['name'] ?? "Chat Room",
-                style: GoogleFonts.abhayaLibre(
-                  textStyle: const TextStyle(
-                      fontSize: 18,
-                      letterSpacing: .5,
-                      fontWeight: FontWeight.w700),
-                ),
-                overflow: TextOverflow.ellipsis,
+        title: Obx(() {
+          final profile = chatController.userProfileData;
+          return Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundImage: profile['profileImageUrl'] != null
+                    ? NetworkImage(profile['profileImageUrl'])
+                    : const AssetImage('assets/splashImg.jpg') as ImageProvider,
               ),
-            ),
-          ],
-        ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  profile['name'] ?? "Chat Room",
+                  style: GoogleFonts.abhayaLibre(
+                    textStyle: const TextStyle(
+                        fontSize: 18,
+                        letterSpacing: .5,
+                        fontWeight: FontWeight.w700),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          );
+        }),
       ),
       body: Column(
         children: [
@@ -126,7 +56,7 @@ class ChatScreenState extends State<ChatScreenFarmer> {
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('chatMessages')
-                  .doc(widget.chatRoomId)
+                  .doc(chatRoomId)
                   .collection('messages')
                   .orderBy('time', descending: true)
                   .snapshots(),
@@ -145,11 +75,12 @@ class ChatScreenState extends State<ChatScreenFarmer> {
                   itemBuilder: (context, index) {
                     var messageData = allMessages[index];
                     String messageText = messageData['message'] ?? '';
-                    String senderId = messageData['senderId'] ?? '';
+                    String senderId = messageData['receiverId'] ?? '';
                     Timestamp timestamp = messageData['time'];
                     DateTime time = timestamp.toDate();
                     bool isSentByMe =
                         senderId == FirebaseAuth.instance.currentUser!.uid;
+
                     return Align(
                       alignment: isSentByMe
                           ? Alignment.centerRight
@@ -195,7 +126,7 @@ class ChatScreenState extends State<ChatScreenFarmer> {
               children: [
                 Expanded(
                   child: TextField(
-                    controller: _messageController,
+                    controller: chatController.messageController,
                     decoration: InputDecoration(
                       hintText: "Type a message",
                       filled: true,
@@ -209,7 +140,7 @@ class ChatScreenState extends State<ChatScreenFarmer> {
                 ),
                 const SizedBox(width: 8),
                 GestureDetector(
-                  onTap: _sendMessage,
+                  onTap: () => chatController.sendMessage(),
                   child: const CircleAvatar(
                     backgroundColor: Colors.amberAccent,
                     radius: 25,

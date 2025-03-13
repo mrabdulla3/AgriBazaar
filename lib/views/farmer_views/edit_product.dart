@@ -1,5 +1,11 @@
+import 'package:agribazar/controllers/farmer_controller/edit_products_controller.dart';
+import 'package:agribazar/views/farmer_views/our_products.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:get/instance_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class EditProductScreen extends StatefulWidget {
@@ -21,56 +27,24 @@ class EditProductScreen extends StatefulWidget {
 }
 
 class EditProductScreenState extends State<EditProductScreen> {
-  late TextEditingController nameController;
-  late TextEditingController priceController;
-  late TextEditingController addressController;
-  bool isSaving = false;
+  
+  final editPrdoctController = Get.put(EditProductsController());
 
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController(text: widget.initialName);
-    priceController =
+    editPrdoctController.nameController = TextEditingController(text: widget.initialName);
+    editPrdoctController.priceController =
         TextEditingController(text: widget.initialPrice.toString());
-    addressController = TextEditingController(text: widget.initialAddress);
+    editPrdoctController.addressController = TextEditingController(text: widget.initialAddress);
   }
 
   @override
   void dispose() {
-    nameController.dispose();
-    priceController.dispose();
-    addressController.dispose();
+    editPrdoctController.nameController.dispose();
+    editPrdoctController.priceController.dispose();
+    editPrdoctController.addressController.dispose();
     super.dispose();
-  }
-
-  Future<void> saveProductChanges() async {
-    setState(() {
-      isSaving = true;
-    });
-
-    try {
-      await FirebaseFirestore.instance
-          .collection('FormCropDetail')
-          .doc(widget.productId)
-          .update({
-        'Variety': nameController.text,
-        'Price': int.parse(priceController.text),
-        'Address': addressController.text,
-      });
-      if (mounted) {
-        Navigator.pop(context, true);
-      } // Returning true to indicate success
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error saving changes: $e")),
-        );
-      }
-    } finally {
-      setState(() {
-        isSaving = false;
-      });
-    }
   }
 
   @override
@@ -90,25 +64,26 @@ class EditProductScreenState extends State<EditProductScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-              controller: nameController,
+              controller: editPrdoctController.nameController,
               decoration: const InputDecoration(
                   labelText: 'Product Name', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 10),
             TextField(
-              controller: priceController,
+              controller: editPrdoctController.priceController,
               decoration: const InputDecoration(
                   labelText: 'Price', border: OutlineInputBorder()),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 10),
             TextField(
-              controller: addressController,
+              controller: editPrdoctController.addressController,
               decoration: const InputDecoration(
                   labelText: 'Address', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 20),
-            isSaving
+            Obx(()=>
+            editPrdoctController.isSaving.value
                 ? const Center(child: CircularProgressIndicator())
                 : Center(
                     child: ElevatedButton(
@@ -119,7 +94,10 @@ class EditProductScreenState extends State<EditProductScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      onPressed: saveProductChanges,
+                      onPressed:(){
+                       editPrdoctController.saveProductChanges(widget.productId);
+                       
+                      } ,
                       child: Text(
                         "Save Changes",
                         style: GoogleFonts.aclonica(
@@ -129,6 +107,7 @@ class EditProductScreenState extends State<EditProductScreen> {
                       ),
                     ),
                   ),
+            )
           ],
         ),
       ),

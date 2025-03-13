@@ -1,21 +1,15 @@
+import 'package:agribazar/controllers/farmer_controller/chat_message_controller.dart';
 import 'package:agribazar/views/buyer_views/chat_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ChatMessageFarmer extends StatefulWidget {
-  const ChatMessageFarmer({super.key});
 
-  @override
-  State<ChatMessageFarmer> createState() => _ChatMessageFarmerState();
-}
-
-class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
-  final String farmerId = FirebaseAuth.instance.currentUser!.uid;
-  String searchQuery = '';
-  TextEditingController searchController = TextEditingController();
-  bool isSearching = false;
+class ChatMessageFarmer extends StatelessWidget {
+  final chatMessage = Get.put(ChatMessageController());
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +18,15 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: isSearching
+        title: Obx(()=>
+         chatMessage.isSearching.value
             ? TextField(
                 autocorrect: true,
                 autofocus: true,
                 onChanged: (value) {
-                  setState(() {
-                    searchQuery = value.toLowerCase();
-                  });
+                  
+                    chatMessage.searchQuery.value = value.toLowerCase();
+                  
                 },
                 style: const TextStyle(color: Colors.black),
                 decoration: InputDecoration(
@@ -41,11 +36,11 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.clear, color: Colors.black),
                     onPressed: () {
-                      setState(() {
-                        searchController.clear();
-                        searchQuery = '';
-                        isSearching = false;
-                      });
+                      
+                        chatMessage.searchController.clear();
+                        chatMessage.searchQuery.value = '';
+                        chatMessage.isSearching.value = false;
+                     
                     },
                   ),
                 ),
@@ -59,17 +54,19 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
                       fontWeight: FontWeight.w700),
                 ),
               ),
+        ),
         centerTitle: true,
         actions: [
-          if (!isSearching)
+         Obx (()=>!chatMessage.isSearching.value?
             IconButton(
               icon: const Icon(Icons.search, color: Colors.black),
               onPressed: () {
-                setState(() {
-                  isSearching = true;
-                });
+                
+                  chatMessage.isSearching.value = true;
+                
               },
-            ),
+            ):SizedBox()
+         ),
         ],
       ),
       body: Padding(
@@ -88,7 +85,7 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
 
                   // Filter chat room documents where the document ID ends with farmerId
                   final filteredRooms = snapshot.data!.docs.where((doc) {
-                    return doc.id.endsWith(farmerId);
+                    return doc.id.endsWith(chatMessage.farmerId!);
                   }).toList();
 
                   if (filteredRooms.isEmpty) {
@@ -129,10 +126,10 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
                               .where((message) =>
                                   message.username
                                       .toLowerCase()
-                                      .contains(searchQuery) ||
+                                      .contains(chatMessage.searchQuery.value) ||
                                   message.message
                                       .toLowerCase()
-                                      .contains(searchQuery))
+                                      .contains(chatMessage.searchQuery.value))
                               .toList();
 
                       if (displaySearchedMessage.isEmpty) {
@@ -176,7 +173,7 @@ class _ChatMessageFarmerState extends State<ChatMessageFarmer> {
           .collection('chatMessages')
           .doc(room.id)
           .collection('messages')
-          .where('senderId', isNotEqualTo: farmerId)
+          .where('senderId', isNotEqualTo: chatMessage.farmerId)
           .get();
 
       // Map to store latest message per senderId

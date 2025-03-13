@@ -1,5 +1,7 @@
 import 'package:agribazar/views/farmer_views/crop_form_detail.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CropCategoriesPage extends StatelessWidget {
@@ -51,14 +53,9 @@ class CropCategoriesPage extends StatelessWidget {
       elevation: 3,
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CropDetailsPage(
+          Get.to(()=> CropDetailsPage(
                 cropType: title,
-              ), // Navigates to CropDetailsPage
-            ),
-          );
+              ));
         },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

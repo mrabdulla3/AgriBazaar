@@ -1,7 +1,13 @@
+import 'package:agribazar/controllers/farmer_controller/our_products_controller.dart';
 import 'package:agribazar/views/farmer_views/edit_product.dart';
+import 'package:agribazar/views/farmer_views/farmer_home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:get/instance_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 
@@ -13,50 +19,16 @@ class OurProducts extends StatefulWidget {
 }
 
 class _OurProductsState extends State<OurProducts> {
-  List<Map<String, dynamic>> productList = [];
-  String errorMessage = '';
-  var logger = Logger();
-  bool isLoading = true;
+  
+  final ourProductController = Get.put(OurProductsController());
 
   @override
   void initState() {
-    getOurProducts();
+    super.initState();
+   ourProductController.getOurProducts();
   }
 
-  Future<void> getOurProducts() async {
-    try {
-      QuerySnapshot items = await FirebaseFirestore.instance
-          .collection('FormCropDetail')
-          .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-          .get();
-
-      setState(() {
-        productList = items.docs.map((doc) {
-          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-          data['id'] = doc.id;
-          return data;
-        }).toList();
-        isLoading = false;
-      });
-    } catch (e) {
-      errorMessage = 'Error fetching products: $e';
-      isLoading = false;
-    }
-  }
-
-  Future<void> deleteItem(String productId) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('FormCropDetail')
-          .doc(productId)
-          .delete();
-      setState(() {
-        productList.removeWhere((product) => product['id'] == productId);
-      });
-    } catch (e) {
-      logger.e("Error deleting product: $e");
-    }
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -70,20 +42,24 @@ class _OurProductsState extends State<OurProducts> {
                     fontWeight: FontWeight.w600),
               )),
           centerTitle: true,
+          leading: IconButton(onPressed: (){
+               Navigator.pop(context);
+          }, icon: const Icon(Icons.arrow_back)),
         ),
         body: SingleChildScrollView(
             child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Column(
+          child: Obx(()=>
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (isLoading)
+              if (ourProductController.isLoading.value)
                 const Center(
                   child: CircularProgressIndicator(),
                 )
-              else if (errorMessage.isNotEmpty)
+              else if (ourProductController.errorMessage.value.isNotEmpty)
                 Center(
-                  child: Text(errorMessage,
+                  child: Text(ourProductController.errorMessage.value,
                       style: const TextStyle(color: Colors.red)),
                 )
               else
@@ -98,19 +74,20 @@ class _OurProductsState extends State<OurProducts> {
                     mainAxisSpacing: 10.0,
                     childAspectRatio: 0.75, // Aspect ratio for the grid items
                   ),
-                  itemCount: productList.length,
+                  itemCount: ourProductController.productList.length,
                   itemBuilder: (context, index) {
                     return buildProducts(
                       context,
-                      productList[index]['Variety'],
-                      productList[index]['Crop Image'],
-                      productList[index]['Price'],
-                      productList[index]['id'],
-                      productList[index]['Address'],
+                      ourProductController.productList[index]['Variety'],
+                      ourProductController.productList[index]['Crop Image'],
+                      ourProductController.productList[index]['Price'],
+                      ourProductController.productList[index]['id'],
+                      ourProductController.productList[index]['Address'],
                     );
                   },
                 ),
             ],
+          )
           ),
         )));
   }
@@ -196,7 +173,7 @@ class _OurProductsState extends State<OurProducts> {
                               ),
                             ).then((isUpdated) {
                               if (isUpdated == true) {
-                                getOurProducts();
+                                ourProductController.getOurProducts();
                               }
                             });
                           },
@@ -213,7 +190,8 @@ class _OurProductsState extends State<OurProducts> {
                         value: 'delete',
                         child: GestureDetector(
                           onTap: () {
-                            deleteItem(productId);
+                            ourProductController.deleteItem(productId);
+                            Navigator.pop(context);
                           },
                           child: const Row(
                             children: [
