@@ -1,12 +1,8 @@
 import 'dart:io';
 import 'package:agribazar/controllers/farmer_controller/profile_controller.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:logger/logger.dart';
 
 class ProfileFarmer extends StatelessWidget {
   final User user;
@@ -132,23 +128,24 @@ class ProfileFarmer extends StatelessWidget {
 
               // User Information
               Obx(() {
-                return profileController.userProfileData != null
+                return profileController.userProfileData.isNotEmpty
                     ? Column(
                         children: [
                           buildProfileInfo(
                               Icons.person,
                               profileController.nameController,
-                              profileController.userProfileData!['name'] ??'',
+                              profileController.userProfileData['name'] ?? '',
                               profileController),
                           buildProfileInfo(
                               Icons.location_on,
                               profileController.addressController,
-                              profileController.userProfileData!['address']??'',
+                              profileController.userProfileData['address'] ??
+                                  '',
                               profileController),
                           buildProfileInfo(
                               Icons.phone,
                               profileController.phoneController,
-                              profileController.userProfileData!['phone']??'',
+                              profileController.userProfileData['phone'] ?? '',
                               profileController),
                           buildProfileInfo(
                             Icons.email,
