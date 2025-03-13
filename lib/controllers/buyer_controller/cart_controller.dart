@@ -14,20 +14,9 @@ class CartController extends GetxController {
   RxDouble deliveryCharge = 30.00.obs;
   var logger = Logger();
 
-  @override
-  void onInit() {
-    super.onInit();
-    calculateSubtotal();
-  }
-
   /// Add item to Cart
   Future<void> addCartItem(String productId, String productName, int price,
       String pImage, String address) async {
-    if (user.value == null) {
-      Get.snackbar('Error', 'User not logged in.');
-      return;
-    }
-
     try {
       await FirebaseFirestore.instance
           .collection('carts')

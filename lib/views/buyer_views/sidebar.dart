@@ -83,6 +83,14 @@ class _SidebarState extends State<Sidebar> {
                   ),
           ),
           ListTile(
+              leading: SizedBox(
+                height: 25,
+                width: 25,
+                child: Image.asset('assets/product.png'),
+              ),
+              title: const Text('My Orders'),
+              onTap: () {}),
+          ListTile(
               leading: const Icon(Icons.feedback_outlined),
               title: const Text('Feedback'),
               onTap: () {}),

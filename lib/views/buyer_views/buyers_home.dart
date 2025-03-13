@@ -2,7 +2,7 @@ import 'package:agribazar/controllers/buyer_controller/cart_controller.dart';
 import 'package:agribazar/controllers/buyer_controller/home_controller.dart';
 import 'package:agribazar/views/buyer_views/cart.dart';
 import 'package:agribazar/views/buyer_views/category.dart';
-import 'package:agribazar/views/buyer_views/chat_userList.dart';
+import 'package:agribazar/views/buyer_views/chat_userlist.dart';
 import 'package:agribazar/views/buyer_views/detailed_page.dart';
 import 'package:agribazar/views/buyer_views/notification.dart';
 import 'package:agribazar/views/buyer_views/pricing.dart';

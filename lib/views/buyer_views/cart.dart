@@ -1,5 +1,6 @@
 import 'package:agribazar/controllers/buyer_controller/cart_controller.dart';
 import 'package:agribazar/views/buyer_views/address_form.dart';
+import 'package:agribazar/views/buyer_views/order_successfull.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -380,6 +381,7 @@ class CartState extends State<Cart> {
     return ElevatedButton(
         onPressed: () {
           // Handle payment logic here
+          Get.to(() => const OrderSuccessScreen());
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.amber,

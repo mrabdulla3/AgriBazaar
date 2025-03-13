@@ -1,9 +1,7 @@
 import 'package:agribazar/controllers/buyer_controller/address_controller.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/get_core.dart';
 
 class EditAddressPage extends StatefulWidget {
   final User user;
