@@ -23,7 +23,6 @@ class OrderController extends GetxController {
         //print(farmerId);
 
         if (farmerId == null) {
-          print("Error: Missing farmerId in cart item: $item");
           continue; // Skip this item if farmerId is null
         }
 
@@ -49,9 +48,9 @@ class OrderController extends GetxController {
         await orderRef.set(orderData);
       }
 
-      print("Orders placed successfully!");
+      // print("Orders placed successfully!");
     } catch (e) {
-      print("Error placing orders: $e");
+      //print("Error placing orders: $e");
     }
   }
 
@@ -70,13 +69,13 @@ class OrderController extends GetxController {
             orderSnapshot.docs.first.data() as Map<String, dynamic>;
         //print(orderSuccess['orderId']);
       } else {
-        print("No orders found for this user.");
+        //print("No orders found for this user.");
       }
     } catch (e) {
-      print("Error fetching order details: $e");
+      //print("Error fetching order details: $e");
       if (e.toString().contains("[cloud_firestore/failed-precondition]")) {
-        print(
-            "Firestore index is missing! Please create it in the Firebase Console.");
+        //print(
+        //   "Firestore index is missing! Please create it in the Firebase Console.");
       }
     } finally {
       isFetching.value = false;
@@ -98,12 +97,38 @@ class OrderController extends GetxController {
             .toList();
       } else {
         myOrders.clear();
-        print("No orders found for this user.");
+        // print("No orders found for this user.");
       }
     } catch (e) {
-      print("Error fetching order details: $e");
+      // print("Error fetching order details: $e");
     } finally {
       isFetching.value = false;
     }
+  }
+
+  Future<void> changeStatus(String newStatus, String docId) async {
+    try {
+      DocumentReference orderDoc =
+          FirebaseFirestore.instance.collection('orders').doc(docId);
+
+      await orderDoc.update({'status': newStatus});
+
+      print("Order status updated to: $newStatus");
+    } catch (e) {
+      print("Error changing status: $e");
+    }
+  }
+
+  void updateOrderStatus(String docId, String newStatus) {
+    int index = myOrders.indexWhere((order) => order['orderId'] == docId);
+    if (index != -1) {
+      myOrders[index]['status'] = newStatus;
+      myOrders.refresh(); // Notify UI to refresh
+    }
+  }
+
+  String getOrderStatus(String docId) {
+    var order = myOrders.firstWhereOrNull((order) => order['orderId'] == docId);
+    return order?['status'] ?? "";
   }
 }
