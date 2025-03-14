@@ -1,12 +1,9 @@
 import 'package:agribazar/controllers/farmer_controller/chat_message_controller.dart';
 import 'package:agribazar/views/buyer_views/chat_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 
 class ChatMessageFarmer extends StatelessWidget {
   final chatMessage = Get.put(ChatMessageController());
@@ -18,55 +15,49 @@ class ChatMessageFarmer extends StatelessWidget {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: Obx(()=>
-         chatMessage.isSearching.value
-            ? TextField(
-                autocorrect: true,
-                autofocus: true,
-                onChanged: (value) {
-                  
+        title: Obx(
+          () => chatMessage.isSearching.value
+              ? TextField(
+                  autocorrect: true,
+                  autofocus: true,
+                  onChanged: (value) {
                     chatMessage.searchQuery.value = value.toLowerCase();
-                  
-                },
-                style: const TextStyle(color: Colors.black),
-                decoration: InputDecoration(
-                  hintText: 'Search message...',
-                  hintStyle: const TextStyle(color: Colors.black54),
-                  border: InputBorder.none,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.black),
-                    onPressed: () {
-                      
+                  },
+                  style: const TextStyle(color: Colors.black),
+                  decoration: InputDecoration(
+                    hintText: 'Search message...',
+                    hintStyle: const TextStyle(color: Colors.black54),
+                    border: InputBorder.none,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear, color: Colors.black),
+                      onPressed: () {
                         chatMessage.searchController.clear();
                         chatMessage.searchQuery.value = '';
                         chatMessage.isSearching.value = false;
-                     
-                    },
+                      },
+                    ),
+                  ),
+                )
+              : Text(
+                  'Messages',
+                  style: GoogleFonts.abhayaLibre(
+                    textStyle: const TextStyle(
+                        fontSize: 22,
+                        letterSpacing: .5,
+                        fontWeight: FontWeight.w700),
                   ),
                 ),
-              )
-            : Text(
-                'Messages',
-                style: GoogleFonts.abhayaLibre(
-                  textStyle: const TextStyle(
-                      fontSize: 22,
-                      letterSpacing: .5,
-                      fontWeight: FontWeight.w700),
-                ),
-              ),
         ),
         centerTitle: true,
         actions: [
-         Obx (()=>!chatMessage.isSearching.value?
-            IconButton(
-              icon: const Icon(Icons.search, color: Colors.black),
-              onPressed: () {
-                
-                  chatMessage.isSearching.value = true;
-                
-              },
-            ):SizedBox()
-         ),
+          Obx(() => !chatMessage.isSearching.value
+              ? IconButton(
+                  icon: const Icon(Icons.search, color: Colors.black),
+                  onPressed: () {
+                    chatMessage.isSearching.value = true;
+                  },
+                )
+              : SizedBox()),
         ],
       ),
       body: Padding(
@@ -124,9 +115,8 @@ class ChatMessageFarmer extends StatelessWidget {
                       List<ChatMessage> displaySearchedMessage =
                           messagesSnapshot.data!
                               .where((message) =>
-                                  message.username
-                                      .toLowerCase()
-                                      .contains(chatMessage.searchQuery.value) ||
+                                  message.username.toLowerCase().contains(
+                                      chatMessage.searchQuery.value) ||
                                   message.message
                                       .toLowerCase()
                                       .contains(chatMessage.searchQuery.value))

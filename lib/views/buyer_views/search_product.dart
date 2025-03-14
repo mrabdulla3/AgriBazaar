@@ -79,6 +79,7 @@ class SearchProductState extends State<SearchProduct> {
                         product['Price'],
                         product['id'],
                         product['Address'],
+                        product['userId'],
                       );
                     },
                   ),
@@ -90,7 +91,7 @@ class SearchProductState extends State<SearchProduct> {
 }
 
 Widget buildFeaturedProduct(BuildContext context, String name, String imageUrl,
-    int price, String productId, String address) {
+    int price, String productId, String address, String farmerId) {
   double screenHeight = MediaQuery.of(context).size.height;
   return GestureDetector(
     onTap: () {
@@ -163,7 +164,8 @@ Widget buildFeaturedProduct(BuildContext context, String name, String imageUrl,
                     // Ensure SearchProductState is accessed
                     (context.findAncestorStateOfType<SearchProductState>())
                         ?.cartController
-                        .addCartItem(productId, name, price, imageUrl, address);
+                        .addCartItem(productId, name, price, imageUrl, address,
+                            farmerId);
                   },
                 ),
               ],

@@ -1,7 +1,9 @@
 import 'package:agribazar/controllers/buyer_controller/profile_controller.dart';
 import 'package:agribazar/views/authentication_views/authScreen.dart';
+import 'package:agribazar/views/buyer_views/my_order.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/instance_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -83,13 +85,15 @@ class _SidebarState extends State<Sidebar> {
                   ),
           ),
           ListTile(
-              leading: SizedBox(
+              leading: const SizedBox(
                 height: 25,
                 width: 25,
-                child: Image.asset('assets/product.png'),
+                child: Icon(Icons.shopping_bag_outlined),
               ),
               title: const Text('My Orders'),
-              onTap: () {}),
+              onTap: () {
+                Get.to(const MyOrdersScreen());
+              }),
           ListTile(
               leading: const Icon(Icons.feedback_outlined),
               title: const Text('Feedback'),
@@ -112,9 +116,7 @@ class _SidebarState extends State<Sidebar> {
             title: const Text('Logout'),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => const AuthScreen(),
-              ));
+              Get.offAll(const AuthScreen());
             },
           ),
         ],

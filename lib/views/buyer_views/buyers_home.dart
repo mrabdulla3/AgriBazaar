@@ -169,12 +169,12 @@ class MarketHomePage extends StatelessWidget {
                     itemBuilder: (context, index) {
                       //print(homeController.featuredProducts[index]['Crop Image']);
                       return buildFeaturedProduct(
-                        homeController.featuredProducts[index]['Variety'],
-                        homeController.featuredProducts[index]['Crop Image'],
-                        homeController.featuredProducts[index]['Price'],
-                        homeController.featuredProducts[index]['id'],
-                        homeController.featuredProducts[index]['Address'],
-                      );
+                          homeController.featuredProducts[index]['Variety'],
+                          homeController.featuredProducts[index]['Crop Image'],
+                          homeController.featuredProducts[index]['Price'],
+                          homeController.featuredProducts[index]['id'],
+                          homeController.featuredProducts[index]['Address'],
+                          homeController.featuredProducts[index]['userId']);
                     },
                   );
                 }
@@ -272,7 +272,7 @@ class MarketHomePage extends StatelessWidget {
 
   // Function to build each featured product
   Widget buildFeaturedProduct(String name, String imageUrl, int price,
-      String productId, String address) {
+      String productId, String address, String farmerId) {
     double screenHeight = Get.height;
     return GestureDetector(
       onTap: () {
@@ -343,9 +343,10 @@ class MarketHomePage extends StatelessWidget {
                         color: Colors.brown),
                     onPressed: () {
                       // Add to cart or handle other functionality
-                      // print("Home : $price");
+                      //print("Home : ${homeController.featuredProducts}");
+
                       cartController.addCartItem(
-                          productId, name, price, imageUrl, address);
+                          productId, name, price, imageUrl, address, farmerId);
                     },
                   ),
                 ],

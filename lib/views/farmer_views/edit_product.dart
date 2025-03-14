@@ -1,9 +1,5 @@
 import 'package:agribazar/controllers/farmer_controller/edit_products_controller.dart';
-import 'package:agribazar/views/farmer_views/our_products.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:get/instance_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,16 +23,17 @@ class EditProductScreen extends StatefulWidget {
 }
 
 class EditProductScreenState extends State<EditProductScreen> {
-  
   final editPrdoctController = Get.put(EditProductsController());
 
   @override
   void initState() {
     super.initState();
-    editPrdoctController.nameController = TextEditingController(text: widget.initialName);
+    editPrdoctController.nameController =
+        TextEditingController(text: widget.initialName);
     editPrdoctController.priceController =
         TextEditingController(text: widget.initialPrice.toString());
-    editPrdoctController.addressController = TextEditingController(text: widget.initialAddress);
+    editPrdoctController.addressController =
+        TextEditingController(text: widget.initialAddress);
   }
 
   @override
@@ -82,31 +79,31 @@ class EditProductScreenState extends State<EditProductScreen> {
                   labelText: 'Address', border: OutlineInputBorder()),
             ),
             const SizedBox(height: 20),
-            Obx(()=>
-            editPrdoctController.isSaving.value
-                ? const Center(child: CircularProgressIndicator())
-                : Center(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFFFDBE42), // Yellow color
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+            Obx(
+              () => editPrdoctController.isSaving.value
+                  ? const Center(child: CircularProgressIndicator())
+                  : Center(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color(0xFFFDBE42), // Yellow color
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                      ),
-                      onPressed:(){
-                       editPrdoctController.saveProductChanges(widget.productId);
-                       
-                      } ,
-                      child: Text(
-                        "Save Changes",
-                        style: GoogleFonts.aclonica(
-                          fontSize: 14,
-                          color: Colors.white,
+                        onPressed: () {
+                          editPrdoctController
+                              .saveProductChanges(widget.productId);
+                        },
+                        child: Text(
+                          "Save Changes",
+                          style: GoogleFonts.aclonica(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
             )
           ],
         ),

@@ -1,6 +1,6 @@
 import 'package:agribazar/controllers/farmer_controller/farmer_home_controller.dart';
 import 'package:agribazar/views/farmer_views/category_crops.dart';
-import 'package:agribazar/views/farmer_views/chat_messageList.dart';
+import 'package:agribazar/views/farmer_views/chat_messagelist.dart';
 import 'package:agribazar/views/farmer_views/notifications.dart';
 import 'package:agribazar/views/farmer_views/our_products.dart';
 import 'package:agribazar/views/farmer_views/profile.dart';
