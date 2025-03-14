@@ -1,4 +1,5 @@
 import 'package:agribazar/controllers/buyer_controller/cart_controller.dart';
+import 'package:agribazar/controllers/buyer_controller/order_controller.dart';
 import 'package:agribazar/views/buyer_views/address_form.dart';
 import 'package:agribazar/views/buyer_views/order_successfull.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ class Cart extends StatefulWidget {
 
 class CartState extends State<Cart> {
   final CartController cartController = Get.put(CartController());
+  OrderController orderController = Get.put(OrderController());
 
   @override
   void initState() {
@@ -37,7 +39,7 @@ class CartState extends State<Cart> {
         leading: IconButton(
           icon:
               const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Get.back(),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -380,6 +382,8 @@ class CartState extends State<Cart> {
     return ElevatedButton(
         onPressed: () {
           // Handle payment logic here
+          //print(cartController.cartProducts);
+          orderController.placeOrders(cartController.cartProducts);
           Get.to(() => const OrderSuccessScreen());
         },
         style: ElevatedButton.styleFrom(

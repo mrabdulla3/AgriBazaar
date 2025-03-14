@@ -1,16 +1,14 @@
 import 'package:agribazar/controllers/farmer_controller/farmer_home_controller.dart';
 import 'package:agribazar/views/farmer_views/category_crops.dart';
-import 'package:agribazar/views/farmer_views/chat_messageList.dart';
+import 'package:agribazar/views/farmer_views/chat_messagelist.dart';
 import 'package:agribazar/views/farmer_views/notifications.dart';
 import 'package:agribazar/views/farmer_views/our_products.dart';
 import 'package:agribazar/views/farmer_views/profile.dart';
 import 'package:agribazar/views/authentication_views/authScreen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:logger/logger.dart';
 
 class SellerDashboard extends StatefulWidget {
   final User? user;
@@ -62,14 +60,19 @@ class _SellerDashboardState extends State<SellerDashboard> {
                       Obx(() {
                         return CircleAvatar(
                           radius: 35,
-                          backgroundImage: farmerHomeController.userProfileData.isNotEmpty &&
-                                  farmerHomeController.userProfileData['profileImageUrl'] != null
-                              ? NetworkImage(
-                                      farmerHomeController.userProfileData['profileImageUrl'])
+                          backgroundImage: farmerHomeController
+                                      .userProfileData.isNotEmpty &&
+                                  farmerHomeController
+                                          .userProfileData['profileImageUrl'] !=
+                                      null
+                              ? NetworkImage(farmerHomeController
+                                      .userProfileData['profileImageUrl'])
                                   as ImageProvider
                               : null,
                           child: farmerHomeController.userProfileData.isEmpty ||
-                                  farmerHomeController.userProfileData['profileImageUrl']!=null
+                                  farmerHomeController
+                                          .userProfileData['profileImageUrl'] !=
+                                      null
                               ? const Icon(Icons.person, size: 35)
                               : null,
                         );
@@ -208,7 +211,7 @@ class _SellerDashboardState extends State<SellerDashboard> {
             icon: IconButton(
               icon: const Icon(Icons.mail),
               onPressed: () {
-                Get.to(() =>  ChatMessageFarmer());
+                Get.to(() => ChatMessageFarmer());
               },
             ),
             label: 'Message',
@@ -235,8 +238,8 @@ class _SellerDashboardState extends State<SellerDashboard> {
             icon: IconButton(
               icon: const Icon(Icons.person),
               onPressed: () {
-                Get.to(() => ProfileFarmer(
-                    user: FirebaseAuth.instance.currentUser!));
+                Get.to(() =>
+                    ProfileFarmer(user: FirebaseAuth.instance.currentUser!));
               },
             ),
             label: 'Profile',

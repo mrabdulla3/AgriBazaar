@@ -94,6 +94,7 @@ class _CategorysState extends State<Categorys> {
                       categoryController.productsList[index]['Price'],
                       categoryController.productsList[index]['id'],
                       categoryController.productsList[index]['Address'],
+                      categoryController.productsList[index]['userId'],
                     );
                   },
                 ),
@@ -104,7 +105,7 @@ class _CategorysState extends State<Categorys> {
 }
 
 Widget buildCategoryProduct(BuildContext context, String name, String imageUrl,
-    int price, String productId, String address) {
+    int price, String productId, String address, String farmerId) {
   double screenHeight = MediaQuery.of(context).size.height;
   return GestureDetector(
     onTap: () {
@@ -173,7 +174,7 @@ Widget buildCategoryProduct(BuildContext context, String name, String imageUrl,
                   onPressed: () {
                     // Add to cart or handle other functionality
                     cartController.addCartItem(
-                        productId, name, price, imageUrl, address);
+                        productId, name, price, imageUrl, address, farmerId);
                   },
                 ),
               ],
