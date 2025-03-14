@@ -84,35 +84,37 @@ class SignInPage extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       height: 50,
-                      child: signinController.isLoading.value
-                          ? const Center(child: CircularProgressIndicator())
-                          : ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    const Color(0xFFFDBE42), // Yellow color
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                      child: Obx(
+                        () => signinController.isLoading.value
+                            ? const Center(child: CircularProgressIndicator())
+                            : ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      const Color(0xFFFDBE42), // Yellow color
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
-                              ),
-                              onPressed: () {
-                                if (signinController.formkey.currentState!
-                                    .validate()) {
-                                  signinController.email =
-                                      signinController.mailController.text;
-                                  signinController.password =
-                                      signinController.passwordController.text;
+                                onPressed: () {
+                                  if (signinController.formkey.currentState!
+                                      .validate()) {
+                                    signinController.email =
+                                        signinController.mailController.text;
+                                    signinController.password = signinController
+                                        .passwordController.text;
 
-                                  signinController.userLogin();
-                                }
-                              },
-                              child: Text(
-                                'Sign In',
-                                style: GoogleFonts.aclonica(
-                                  fontSize: 16,
-                                  color: Colors.white,
+                                    signinController.userLogin();
+                                  }
+                                },
+                                child: Text(
+                                  'Sign In',
+                                  style: GoogleFonts.aclonica(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
-                            ),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     // Forgot Password

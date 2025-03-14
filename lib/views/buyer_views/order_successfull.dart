@@ -3,6 +3,7 @@ import 'package:agribazar/views/buyer_views/buyers_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
   const OrderSuccessScreen({super.key});
@@ -24,7 +25,13 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Order Details"),
+        title: Text(
+          "Order Details",
+          style: GoogleFonts.abyssinicaSil(
+            textStyle: const TextStyle(
+                fontSize: 20, letterSpacing: .5, fontWeight: FontWeight.w700),
+          ),
+        ),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

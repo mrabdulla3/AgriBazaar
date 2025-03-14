@@ -2,6 +2,7 @@ import 'package:agribazar/controllers/buyer_controller/order_controller.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MyOrdersScreen extends StatefulWidget {
   const MyOrdersScreen({super.key});
@@ -25,9 +26,12 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "My Orders",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+          style: GoogleFonts.abyssinicaSil(
+            textStyle: const TextStyle(
+                fontSize: 20, letterSpacing: .5, fontWeight: FontWeight.w700),
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.yellow.shade700,
