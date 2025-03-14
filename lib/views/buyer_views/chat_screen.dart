@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ChatScreen extends StatefulWidget {
   final String? chatRoomId;
@@ -49,7 +50,12 @@ class ChatScreenState extends State<ChatScreen> {
                   child: Text(
                     chatScreenController.farmerProfileData?['name'] ??
                         "Chat Room",
-                    style: const TextStyle(fontSize: 18),
+                    style: GoogleFonts.abyssinicaSil(
+                      textStyle: const TextStyle(
+                          fontSize: 16,
+                          letterSpacing: .5,
+                          fontWeight: FontWeight.w700),
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

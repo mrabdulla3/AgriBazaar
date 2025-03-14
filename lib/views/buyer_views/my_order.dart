@@ -1,7 +1,9 @@
 import 'package:agribazar/controllers/buyer_controller/order_controller.dart';
+import 'package:agribazar/views/buyer_views/buyers_home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MyOrdersScreen extends StatefulWidget {
   const MyOrdersScreen({super.key});
@@ -25,9 +27,19 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        leading: IconButton(
+            onPressed: () {
+              Get.offAll(MarketHomePage(
+                user: FirebaseAuth.instance.currentUser,
+              ));
+            },
+            icon: const Icon(Icons.arrow_back_ios_new_outlined)),
+        title: Text(
           "My Orders",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+          style: GoogleFonts.abyssinicaSil(
+            textStyle: const TextStyle(
+                fontSize: 20, letterSpacing: .5, fontWeight: FontWeight.w700),
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.yellow.shade700,
@@ -62,6 +74,9 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
   /// Builds an individual order item card
   Widget _buildOrderItem(Map<String, dynamic> order) {
     final List<dynamic> items = order['items'] as List<dynamic>? ?? [];
+    final String docId = order['orderId'] ?? '';
+    final String status = order['status'] ?? '';
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -80,7 +95,7 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Order ID: #${order['orderId'] ?? 'Unknown'}",
+            "Order ID: #$docId",
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -90,7 +105,7 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
           const SizedBox(height: 12),
           if (items.isNotEmpty) _buildProductRow(items[0]),
           const SizedBox(height: 10),
-          _buildOrderButtons(),
+          _buildOrderButtons(status, docId),
         ],
       ),
     );
@@ -145,39 +160,42 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
   }
 
   /// Builds Cancel and View Details buttons
-  Widget _buildOrderButtons() {
+  Widget _buildOrderButtons(String status, String docId) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildCancelButton(),
+        _buildCancelButton(status, docId),
         _buildViewDetailsButton(),
       ],
     );
   }
 
   /// Builds the Cancel Order button
-  Widget _buildCancelButton() {
-    return ElevatedButton.icon(
-      onPressed: () {
-        Get.snackbar(
-          "Cancel Order",
-          "Order cancellation feature coming soon!",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade600,
-          colorText: Colors.white,
-        );
-      },
-      icon: const Icon(Icons.cancel, size: 18),
-      label: const Text("Cancel Order"),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.red.shade600,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+  Widget _buildCancelButton(String status, String docId) {
+    return Obx(() {
+      bool isCancelled = orderController.getOrderStatus(docId) == "cancel";
+
+      return ElevatedButton.icon(
+        onPressed: isCancelled
+            ? null
+            : () async {
+                await orderController.changeStatus("cancel", docId);
+                orderController.updateOrderStatus(docId, "cancel"); // Update UI
+              },
+        icon: const Icon(Icons.cancel, size: 18),
+        label: Text(
+          isCancelled ? "Cancelled" : "Cancel Order",
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-      ),
-    );
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isCancelled ? Colors.grey : Colors.red.shade600,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+        ),
+      );
+    });
   }
 
   /// Builds the View Details button

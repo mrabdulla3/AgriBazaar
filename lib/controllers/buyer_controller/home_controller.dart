@@ -15,7 +15,15 @@ class HomeController extends GetxController {
   TextEditingController searchController = TextEditingController();
   RxList<Map<String, dynamic>> searchResult = RxList([]);
   RxBool isSearching = false.obs;
+  RxInt currentIndex = 0.obs; // For dot indicator
   final Logger logger = Logger();
+
+  List<String> bannerImages = [
+    'assets/banner1.jpg',
+    'assets/banner2.jpg',
+    'assets/banner3.jpg',
+    'assets/banner4.jpg',
+  ];
 
   /// Update Cart Item Count from Firestore
   void updateCartItemCount() {

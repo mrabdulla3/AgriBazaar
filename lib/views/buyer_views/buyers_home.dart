@@ -9,6 +9,7 @@ import 'package:agribazar/views/buyer_views/pricing.dart';
 import 'package:agribazar/views/buyer_views/profile.dart';
 import 'package:agribazar/views/buyer_views/sidebar.dart';
 import 'package:agribazar/views/authentication_views/signup_page.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -94,21 +95,54 @@ class MarketHomePage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
               SizedBox(height: screenHeight * 0.03),
-
               // Top banner image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.asset(
-                  'assets/splashImg.jpg',
+              CarouselSlider(
+                options: CarouselOptions(
                   height: screenHeight * 0.2,
-                  width: screenWidth,
-                  fit: BoxFit.cover,
+                  autoPlay: true,
+                  enlargeCenterPage: true,
+                  viewportFraction: 0.9,
+                  aspectRatio: 16 / 9,
+                  onPageChanged: (index, reason) {
+                    homeController.currentIndex.value = index;
+                  },
+                ),
+                items: homeController.bannerImages.map((imagePath) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.asset(
+                      imagePath,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 10),
+              // Dot Indicator
+              Obx(
+                () => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    homeController.bannerImages.length,
+                    (index) => AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                      height: 8,
+                      width:
+                          homeController.currentIndex.value == index ? 12 : 8,
+                      decoration: BoxDecoration(
+                        color: homeController.currentIndex.value == index
+                            ? Colors.blue
+                            : Colors.grey,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: screenHeight * 0.02),
-
               // Category section
               Text(
                 "Category",

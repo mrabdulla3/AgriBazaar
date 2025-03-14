@@ -30,9 +30,9 @@ class CartState extends State<Cart> {
       appBar: AppBar(
         title: Text(
           "My cart",
-          style: GoogleFonts.abhayaLibre(
+          style: GoogleFonts.abyssinicaSil(
             textStyle: const TextStyle(
-                fontSize: 25, letterSpacing: .5, fontWeight: FontWeight.w700),
+                fontSize: 20, letterSpacing: .5, fontWeight: FontWeight.w700),
           ),
         ),
         centerTitle: true,
