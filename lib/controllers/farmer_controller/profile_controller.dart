@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -9,17 +8,19 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 
 class ProfileController extends GetxController{
-  User ?user;
+  
 
-  ProfileController(this.user);
-   
+  ProfileController({required this.user});
+  User ?user;
   @override
   void onInit() {
     super.onInit();
-    getUserProfileData();
+    if (user != null) {
+      getUserProfileData();
+    }
   }
   final ImagePicker _picker = ImagePicker();
-  RxMap<String, dynamic> userProfileData = <String, dynamic>{}.obs;
+   RxMap<String, dynamic>? userProfileData = <String, dynamic>{}.obs;
 
   RxBool isEditing = false.obs;
   RxBool isUploading = false.obs;
@@ -43,13 +44,12 @@ class ProfileController extends GetxController{
 
       if (userDoc.exists) {
        
-          userProfileData = RxMap<String, dynamic>.from(userDoc.data() as Map<String, dynamic>);
+          userProfileData!.value = userDoc.data() as Map<String, dynamic>;
 
-
-          nameController.text = userProfileData['name'] ?? "";
-          addressController.text = userProfileData['address'] ?? '';
-          phoneController.text = userProfileData['phone'] ?? '';
-          profileImageUrl.value = userProfileData['profileImageUrl'];
+          nameController.text = userProfileData!['name'] ?? "";
+          addressController.text = userProfileData!['address'] ?? '';
+          phoneController.text = userProfileData!['phone'] ?? '';
+          profileImageUrl.value = userProfileData!['profileImageUrl'];
       
       }
     } catch (e) {
@@ -91,7 +91,7 @@ class ProfileController extends GetxController{
         'profileImageUrl': profileImageUrl.value,
       });
       isEditing.value = false;
-  
+      getUserProfileData();
     } catch (e) {
       logger.e('Error saving profile data: $e');
     }
@@ -107,5 +107,5 @@ class ProfileController extends GetxController{
       logger.e('Error selecting profile image: $e');
     }
   }
-
+  
 }

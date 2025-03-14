@@ -1,29 +1,41 @@
 import 'dart:io';
+import 'package:agribazar/controllers/farmer_controller/farmer_home_controller.dart';
 import 'package:agribazar/controllers/farmer_controller/profile_controller.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:logger/logger.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class ProfileFarmer extends StatelessWidget {
-  final User user;
+
+
+class ProfileFarmer extends StatefulWidget {
+  final User? user;
   ProfileFarmer({super.key, required this.user});
 
+  @override
+  State<ProfileFarmer> createState() => _ProfileFarmerState();
+}
+
+class _ProfileFarmerState extends State<ProfileFarmer> {
+  late ProfileController profileController;
+  final farmerHomeController = Get.put(FarmerHomeController());
+  @override
+  void initState() {
+    super.initState();
+    profileController = Get.put(ProfileController(user: widget.user));
+  }
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
-    final profileController = Get.put(ProfileController(user));
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.amber,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              Navigator.of(context).pop();
+              farmerHomeController.getUserInfo(widget.user!);
+              Navigator.pop(context);
             },
           ),
         ),
@@ -111,20 +123,24 @@ class ProfileFarmer extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Obx(
-                      () => Text(
-                        profileController.userProfileData.isNotEmpty
-                            ? (profileController.userProfileData['name'] ??
-                                profileController.user?.displayName ??
-                                'Unknown')
-                            : 'Loading...',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    Obx(() {
+                    print(widget.user!.displayName);
+                    print(profileController.userProfileData!['name']);
+                    return Text(
+                      profileController.userProfileData != null
+                          ? profileController.userProfileData!['name'] ??
+                              widget.user!.displayName ??
+                              'Unknown'
+                          : 'Loading...',
+                      style: GoogleFonts.abhayaLibre(
+                        textStyle: const TextStyle(
+                            fontSize: 20,
+                            letterSpacing: .5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
                       ),
-                    )
+                    );
+                  })
                   ],
                 ),
               ),
@@ -132,7 +148,7 @@ class ProfileFarmer extends StatelessWidget {
 
               // User Information
               Obx(() {
-                return profileController.userProfileData != null
+                return profileController.userProfileData!=null
                     ? Column(
                         children: [
                           buildProfileInfo(

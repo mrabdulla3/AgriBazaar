@@ -5,12 +5,11 @@ import 'package:agribazar/views/farmer_views/notifications.dart';
 import 'package:agribazar/views/farmer_views/our_products.dart';
 import 'package:agribazar/views/farmer_views/profile.dart';
 import 'package:agribazar/views/authentication_views/authScreen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:logger/logger.dart';
+
 
 class SellerDashboard extends StatefulWidget {
   final User? user;
