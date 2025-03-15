@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:get/instance_manager.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Categorys extends StatefulWidget {
   final User? user;
@@ -36,7 +37,10 @@ class _CategorysState extends State<Categorys> {
           centerTitle: true,
           title: Text(
             widget.cropType ?? "Categories Item",
-            style: const TextStyle(color: Colors.black),
+            style: GoogleFonts.abyssinicaSil(
+              textStyle: const TextStyle(
+                  fontSize: 20, letterSpacing: .5, fontWeight: FontWeight.w700),
+            ),
           ),
           backgroundColor: Colors.white,
           leading: IconButton(
@@ -94,6 +98,7 @@ class _CategorysState extends State<Categorys> {
                       categoryController.productsList[index]['Price'],
                       categoryController.productsList[index]['id'],
                       categoryController.productsList[index]['Address'],
+                      categoryController.productsList[index]['userId'],
                     );
                   },
                 ),
@@ -104,7 +109,7 @@ class _CategorysState extends State<Categorys> {
 }
 
 Widget buildCategoryProduct(BuildContext context, String name, String imageUrl,
-    int price, String productId, String address) {
+    int price, String productId, String address, String farmerId) {
   double screenHeight = MediaQuery.of(context).size.height;
   return GestureDetector(
     onTap: () {
@@ -173,7 +178,7 @@ Widget buildCategoryProduct(BuildContext context, String name, String imageUrl,
                   onPressed: () {
                     // Add to cart or handle other functionality
                     cartController.addCartItem(
-                        productId, name, price, imageUrl, address);
+                        productId, name, price, imageUrl, address, farmerId);
                   },
                 ),
               ],

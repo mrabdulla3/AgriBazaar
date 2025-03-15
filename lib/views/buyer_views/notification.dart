@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Notifications extends StatelessWidget {
   const Notifications({super.key});
@@ -16,12 +17,11 @@ class Notifications extends StatelessWidget {
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
+        title: Text(
           'Notifications',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+          style: GoogleFonts.abyssinicaSil(
+            textStyle: const TextStyle(
+                fontSize: 20, letterSpacing: .5, fontWeight: FontWeight.w700),
           ),
         ),
         centerTitle: true,

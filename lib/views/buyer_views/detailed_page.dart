@@ -233,7 +233,9 @@ class ProductDetailPageState extends State<ProductDetailPage> {
                                       detailController
                                           .productDetails!['Crop Image'],
                                       detailController
-                                          .productDetails!['Address']);
+                                          .productDetails!['Address'],
+                                      detailController
+                                          .productDetails!['userId']);
                                 },
                                 style: ElevatedButton.styleFrom(
                                   padding:

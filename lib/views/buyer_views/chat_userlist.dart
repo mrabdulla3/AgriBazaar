@@ -111,37 +111,38 @@ class _ChatMessageBuyerState extends State<ChatMessageBuyer> {
                           messagesSnapshot.data!.isEmpty) {
                         return const Center(child: Text("No messages found"));
                       }
-
                       // Filter messages based on the search term
-                      List<ChatMessage> displayedMessages = messagesSnapshot
-                          .data!
-                          .where((message) =>
-                              message.username.toLowerCase().contains(
-                                  chatUserlistController.searchQuery.value) ||
-                              message.message.toLowerCase().contains(
-                                  chatUserlistController.searchQuery.value))
-                          .toList();
+                      return Obx(() {
+                        List<ChatMessage> displayedMessages = messagesSnapshot
+                            .data!
+                            .where((message) =>
+                                message.username.toLowerCase().contains(
+                                    chatUserlistController.searchQuery.value) ||
+                                message.message.toLowerCase().contains(
+                                    chatUserlistController.searchQuery.value))
+                            .toList();
 
-                      if (displayedMessages.isEmpty) {
-                        return const Center(child: Text("No messages found"));
-                      }
+                        if (displayedMessages.isEmpty) {
+                          return const Center(child: Text("No messages found"));
+                        }
 
-                      return ListView(
-                        children: (displayedMessages.isNotEmpty
-                                ? displayedMessages
-                                : messagesSnapshot.data!)
-                            .map((message) {
-                          return ChatItem(
-                            name: message.username,
-                            message: message.message,
-                            time: formatTime(message.time),
-                            isRead: message.isRead,
-                            imageUrl: message.buyerImageUrl,
-                            senderId: message.senderId,
-                            chatRoomId: message.chatRoomId,
-                          );
-                        }).toList(),
-                      );
+                        return ListView(
+                          children: (displayedMessages.isNotEmpty
+                                  ? displayedMessages
+                                  : messagesSnapshot.data!)
+                              .map((message) {
+                            return ChatItem(
+                              name: message.username,
+                              message: message.message,
+                              time: formatTime(message.time),
+                              isRead: message.isRead,
+                              imageUrl: message.buyerImageUrl,
+                              senderId: message.senderId,
+                              chatRoomId: message.chatRoomId,
+                            );
+                          }).toList(),
+                        );
+                      });
                     },
                   );
                 },

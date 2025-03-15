@@ -1,4 +1,5 @@
 import 'package:agribazar/controllers/buyer_controller/cart_controller.dart';
+import 'package:agribazar/controllers/buyer_controller/order_controller.dart';
 import 'package:agribazar/views/buyer_views/address_form.dart';
 import 'package:agribazar/views/buyer_views/order_successfull.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ class Cart extends StatefulWidget {
 
 class CartState extends State<Cart> {
   final CartController cartController = Get.put(CartController());
+  OrderController orderController = Get.put(OrderController());
 
   @override
   void initState() {
@@ -28,16 +30,16 @@ class CartState extends State<Cart> {
       appBar: AppBar(
         title: Text(
           "My cart",
-          style: GoogleFonts.abhayaLibre(
+          style: GoogleFonts.abyssinicaSil(
             textStyle: const TextStyle(
-                fontSize: 25, letterSpacing: .5, fontWeight: FontWeight.w700),
+                fontSize: 20, letterSpacing: .5, fontWeight: FontWeight.w700),
           ),
         ),
         centerTitle: true,
         leading: IconButton(
           icon:
               const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Get.back(),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -380,6 +382,8 @@ class CartState extends State<Cart> {
     return ElevatedButton(
         onPressed: () {
           // Handle payment logic here
+          //print(cartController.cartProducts);
+          orderController.placeOrders(cartController.cartProducts);
           Get.to(() => const OrderSuccessScreen());
         },
         style: ElevatedButton.styleFrom(
@@ -389,16 +393,18 @@ class CartState extends State<Cart> {
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
         child: Obx(
-          () => Text(
-            "Pay Now Rs. ${cartController.total.toStringAsFixed(2)}",
-            style: GoogleFonts.abhayaLibre(
-              textStyle: const TextStyle(
-                  fontSize: 20,
-                  letterSpacing: .5,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            ),
-          ),
+          () => cartController.isLoading.value
+              ? const CircularProgressIndicator()
+              : Text(
+                  "Pay Now Rs. ${cartController.total.toStringAsFixed(2)}",
+                  style: GoogleFonts.abhayaLibre(
+                    textStyle: const TextStyle(
+                        fontSize: 20,
+                        letterSpacing: .5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
+                  ),
+                ),
         ));
   }
 }

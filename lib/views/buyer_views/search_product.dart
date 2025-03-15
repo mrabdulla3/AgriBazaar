@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/route_manager.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SearchProduct extends StatefulWidget {
   final User? user;
@@ -23,9 +24,12 @@ class SearchProductState extends State<SearchProduct> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text(
+        title: Text(
           "Searched Item",
-          style: TextStyle(color: Colors.black),
+          style: GoogleFonts.abyssinicaSil(
+            textStyle: const TextStyle(
+                fontSize: 20, letterSpacing: .5, fontWeight: FontWeight.w700),
+          ),
         ),
         backgroundColor: Colors.white,
         leading: IconButton(
@@ -79,6 +83,7 @@ class SearchProductState extends State<SearchProduct> {
                         product['Price'],
                         product['id'],
                         product['Address'],
+                        product['userId'],
                       );
                     },
                   ),
@@ -90,7 +95,7 @@ class SearchProductState extends State<SearchProduct> {
 }
 
 Widget buildFeaturedProduct(BuildContext context, String name, String imageUrl,
-    int price, String productId, String address) {
+    int price, String productId, String address, String farmerId) {
   double screenHeight = MediaQuery.of(context).size.height;
   return GestureDetector(
     onTap: () {
@@ -163,7 +168,8 @@ Widget buildFeaturedProduct(BuildContext context, String name, String imageUrl,
                     // Ensure SearchProductState is accessed
                     (context.findAncestorStateOfType<SearchProductState>())
                         ?.cartController
-                        .addCartItem(productId, name, price, imageUrl, address);
+                        .addCartItem(productId, name, price, imageUrl, address,
+                            farmerId);
                   },
                 ),
               ],

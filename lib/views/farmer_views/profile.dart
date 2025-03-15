@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
-
 class ProfileFarmer extends StatefulWidget {
   final User? user;
   ProfileFarmer({super.key, required this.user});
@@ -154,17 +152,18 @@ class _ProfileFarmerState extends State<ProfileFarmer> {
                           buildProfileInfo(
                               Icons.person,
                               profileController.nameController,
-                              profileController.userProfileData!['name'] ??'',
+                              profileController.userProfileData['name'] ?? '',
                               profileController),
                           buildProfileInfo(
                               Icons.location_on,
                               profileController.addressController,
-                              profileController.userProfileData!['address']??'',
+                              profileController.userProfileData['address'] ??
+                                  '',
                               profileController),
                           buildProfileInfo(
                               Icons.phone,
                               profileController.phoneController,
-                              profileController.userProfileData!['phone']??'',
+                              profileController.userProfileData['phone'] ?? '',
                               profileController),
                           buildProfileInfo(
                             Icons.email,

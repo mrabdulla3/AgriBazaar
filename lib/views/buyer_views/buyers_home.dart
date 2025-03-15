@@ -9,6 +9,7 @@ import 'package:agribazar/views/buyer_views/pricing.dart';
 import 'package:agribazar/views/buyer_views/profile.dart';
 import 'package:agribazar/views/buyer_views/sidebar.dart';
 import 'package:agribazar/views/authentication_views/signup_page.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
@@ -24,7 +25,7 @@ class MarketHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
+    //double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
@@ -61,14 +62,17 @@ class MarketHomePage extends StatelessWidget {
             children: [
               // Search bar with a button
               Container(
-                height: 45,
-                padding: const EdgeInsets.symmetric(horizontal: 5),
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(25),
-                  border: Border.all(
-                      color: const Color.fromARGB(255, 113, 109, 109),
-                      width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: TextField(
                   controller: homeController.searchController,
@@ -76,16 +80,20 @@ class MarketHomePage extends StatelessWidget {
                     homeController.searchQuery(value);
                   },
                   decoration: InputDecoration(
-                    hintText: "Search...",
-                    hintStyle: GoogleFonts.abhayaLibre(
+                    hintText: "Search for crops, fruits...",
+                    hintStyle: GoogleFonts.poppins(
                       textStyle: const TextStyle(
-                          fontSize: 16,
-                          letterSpacing: .5,
-                          fontWeight: FontWeight.w600),
+                        fontSize: 14,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 20),
                     prefixIcon: IconButton(
-                      icon: const Icon(Icons.search, color: Colors.black),
+                      icon: const Icon(Icons.search,
+                          color: Colors.blue, size: 26),
                       onPressed: () {
                         homeController
                             .searchQuery(homeController.searchController.text);
@@ -94,21 +102,54 @@ class MarketHomePage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
               SizedBox(height: screenHeight * 0.03),
-
               // Top banner image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.asset(
-                  'assets/splashImg.jpg',
+              CarouselSlider(
+                options: CarouselOptions(
                   height: screenHeight * 0.2,
-                  width: screenWidth,
-                  fit: BoxFit.cover,
+                  autoPlay: true,
+                  enlargeCenterPage: true,
+                  viewportFraction: 0.9,
+                  aspectRatio: 16 / 9,
+                  onPageChanged: (index, reason) {
+                    homeController.currentIndex.value = index;
+                  },
+                ),
+                items: homeController.bannerImages.map((imagePath) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.asset(
+                      imagePath,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 10),
+              // Dot Indicator
+              Obx(
+                () => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    homeController.bannerImages.length,
+                    (index) => AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                      height: 8,
+                      width:
+                          homeController.currentIndex.value == index ? 12 : 8,
+                      decoration: BoxDecoration(
+                        color: homeController.currentIndex.value == index
+                            ? Colors.blue
+                            : Colors.grey,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: screenHeight * 0.02),
-
               // Category section
               Text(
                 "Category",
@@ -169,12 +210,12 @@ class MarketHomePage extends StatelessWidget {
                     itemBuilder: (context, index) {
                       //print(homeController.featuredProducts[index]['Crop Image']);
                       return buildFeaturedProduct(
-                        homeController.featuredProducts[index]['Variety'],
-                        homeController.featuredProducts[index]['Crop Image'],
-                        homeController.featuredProducts[index]['Price'],
-                        homeController.featuredProducts[index]['id'],
-                        homeController.featuredProducts[index]['Address'],
-                      );
+                          homeController.featuredProducts[index]['Variety'],
+                          homeController.featuredProducts[index]['Crop Image'],
+                          homeController.featuredProducts[index]['Price'],
+                          homeController.featuredProducts[index]['id'],
+                          homeController.featuredProducts[index]['Address'],
+                          homeController.featuredProducts[index]['userId']);
                     },
                   );
                 }
@@ -272,7 +313,7 @@ class MarketHomePage extends StatelessWidget {
 
   // Function to build each featured product
   Widget buildFeaturedProduct(String name, String imageUrl, int price,
-      String productId, String address) {
+      String productId, String address, String farmerId) {
     double screenHeight = Get.height;
     return GestureDetector(
       onTap: () {
@@ -343,9 +384,10 @@ class MarketHomePage extends StatelessWidget {
                         color: Colors.brown),
                     onPressed: () {
                       // Add to cart or handle other functionality
-                      // print("Home : $price");
+                      //print("Home : ${homeController.featuredProducts}");
+
                       cartController.addCartItem(
-                          productId, name, price, imageUrl, address);
+                          productId, name, price, imageUrl, address, farmerId);
                     },
                   ),
                 ],

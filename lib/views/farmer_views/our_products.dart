@@ -1,15 +1,10 @@
 import 'package:agribazar/controllers/farmer_controller/our_products_controller.dart';
 import 'package:agribazar/views/farmer_views/edit_product.dart';
-import 'package:agribazar/views/farmer_views/farmer_home.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:get/instance_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:logger/logger.dart';
 
 class OurProducts extends StatefulWidget {
   const OurProducts({super.key});
@@ -19,16 +14,13 @@ class OurProducts extends StatefulWidget {
 }
 
 class _OurProductsState extends State<OurProducts> {
-  
   final ourProductController = Get.put(OurProductsController());
 
   @override
   void initState() {
     super.initState();
-   ourProductController.getOurProducts();
+    ourProductController.getOurProducts();
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -42,53 +34,55 @@ class _OurProductsState extends State<OurProducts> {
                     fontWeight: FontWeight.w600),
               )),
           centerTitle: true,
-          leading: IconButton(onPressed: (){
-               Navigator.pop(context);
-          }, icon: const Icon(Icons.arrow_back)),
+          leading: IconButton(
+              onPressed: () {
+                Get.back();
+              },
+              icon: const Icon(Icons.arrow_back_ios_new_rounded)),
         ),
         body: SingleChildScrollView(
             child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Obx(()=>
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (ourProductController.isLoading.value)
-                const Center(
-                  child: CircularProgressIndicator(),
-                )
-              else if (ourProductController.errorMessage.value.isNotEmpty)
-                Center(
-                  child: Text(ourProductController.errorMessage.value,
-                      style: const TextStyle(color: Colors.red)),
-                )
-              else
-                GridView.builder(
-                  shrinkWrap:
-                      true, // This will make the GridView take minimum space
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Prevent scrolling inside GridView
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // Number of items in a row
-                    crossAxisSpacing: 10.0,
-                    mainAxisSpacing: 10.0,
-                    childAspectRatio: 0.75, // Aspect ratio for the grid items
-                  ),
-                  itemCount: ourProductController.productList.length,
-                  itemBuilder: (context, index) {
-                    return buildProducts(
-                      context,
-                      ourProductController.productList[index]['Variety'],
-                      ourProductController.productList[index]['Crop Image'],
-                      ourProductController.productList[index]['Price'],
-                      ourProductController.productList[index]['id'],
-                      ourProductController.productList[index]['Address'],
-                    );
-                  },
-                ),
-            ],
-          )
-          ),
+          child: Obx(() => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (ourProductController.isLoading.value)
+                    const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  else if (ourProductController.errorMessage.value.isNotEmpty)
+                    Center(
+                      child: Text(ourProductController.errorMessage.value,
+                          style: const TextStyle(color: Colors.red)),
+                    )
+                  else
+                    GridView.builder(
+                      shrinkWrap:
+                          true, // This will make the GridView take minimum space
+                      physics:
+                          const NeverScrollableScrollPhysics(), // Prevent scrolling inside GridView
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2, // Number of items in a row
+                        crossAxisSpacing: 10.0,
+                        mainAxisSpacing: 10.0,
+                        childAspectRatio:
+                            0.75, // Aspect ratio for the grid items
+                      ),
+                      itemCount: ourProductController.productList.length,
+                      itemBuilder: (context, index) {
+                        return buildProducts(
+                          context,
+                          ourProductController.productList[index]['Variety'],
+                          ourProductController.productList[index]['Crop Image'],
+                          ourProductController.productList[index]['Price'],
+                          ourProductController.productList[index]['id'],
+                          ourProductController.productList[index]['Address'],
+                        );
+                      },
+                    ),
+                ],
+              )),
         )));
   }
 
