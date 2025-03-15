@@ -25,7 +25,7 @@ class MarketHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
+    //double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
@@ -62,14 +62,17 @@ class MarketHomePage extends StatelessWidget {
             children: [
               // Search bar with a button
               Container(
-                height: 45,
-                padding: const EdgeInsets.symmetric(horizontal: 5),
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(25),
-                  border: Border.all(
-                      color: const Color.fromARGB(255, 113, 109, 109),
-                      width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: TextField(
                   controller: homeController.searchController,
@@ -77,16 +80,20 @@ class MarketHomePage extends StatelessWidget {
                     homeController.searchQuery(value);
                   },
                   decoration: InputDecoration(
-                    hintText: "Search...",
-                    hintStyle: GoogleFonts.abhayaLibre(
+                    hintText: "Search for crops, fruits...",
+                    hintStyle: GoogleFonts.poppins(
                       textStyle: const TextStyle(
-                          fontSize: 16,
-                          letterSpacing: .5,
-                          fontWeight: FontWeight.w600),
+                        fontSize: 14,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 20),
                     prefixIcon: IconButton(
-                      icon: const Icon(Icons.search, color: Colors.black),
+                      icon: const Icon(Icons.search,
+                          color: Colors.blue, size: 26),
                       onPressed: () {
                         homeController
                             .searchQuery(homeController.searchController.text);

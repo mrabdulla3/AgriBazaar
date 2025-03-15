@@ -13,6 +13,7 @@ class CartController extends GetxController {
   RxBool isPickup = false.obs;
   RxDouble deliveryCharge = 30.00.obs;
   var logger = Logger();
+  RxBool isLoading = false.obs;
 
   /// Add item to Cart
   Future<void> addCartItem(String productId, String productName, int price,
@@ -54,6 +55,7 @@ class CartController extends GetxController {
   }
 
   Future<void> getCartItem() async {
+    isLoading.value = true;
     try {
       QuerySnapshot cartItem = await FirebaseFirestore.instance
           .collection('carts')
@@ -81,6 +83,8 @@ class CartController extends GetxController {
       //print(cartProducts);
     } catch (e) {
       logger.e("Error fetching cart items: $e");
+    } finally {
+      isLoading.value = false;
     }
   }
 

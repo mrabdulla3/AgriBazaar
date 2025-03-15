@@ -1,6 +1,7 @@
 import 'package:agribazar/controllers/farmer_controller/our_products_controller.dart';
 import 'package:agribazar/views/farmer_views/edit_product.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:get/instance_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -35,9 +36,9 @@ class _OurProductsState extends State<OurProducts> {
           centerTitle: true,
           leading: IconButton(
               onPressed: () {
-                Navigator.pop(context);
+                Get.back();
               },
-              icon: const Icon(Icons.arrow_back)),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded)),
         ),
         body: SingleChildScrollView(
             child: Padding(

@@ -111,36 +111,39 @@ class ChatMessageFarmer extends StatelessWidget {
                           messagesSnapshot.data!.isEmpty) {
                         return const Center(child: Text("No messages found"));
                       }
+                      return Obx(
+                        () {
+                          List<ChatMessage> displaySearchedMessage =
+                              messagesSnapshot.data!
+                                  .where((message) =>
+                                      message.username.toLowerCase().contains(
+                                          chatMessage.searchQuery.value) ||
+                                      message.message.toLowerCase().contains(
+                                          chatMessage.searchQuery.value))
+                                  .toList();
 
-                      List<ChatMessage> displaySearchedMessage =
-                          messagesSnapshot.data!
-                              .where((message) =>
-                                  message.username.toLowerCase().contains(
-                                      chatMessage.searchQuery.value) ||
-                                  message.message
-                                      .toLowerCase()
-                                      .contains(chatMessage.searchQuery.value))
-                              .toList();
+                          if (displaySearchedMessage.isEmpty) {
+                            return const Center(
+                                child: Text("No messages found"));
+                          }
 
-                      if (displaySearchedMessage.isEmpty) {
-                        return const Center(child: Text("No messages found"));
-                      }
-
-                      return ListView(
-                        children: (displaySearchedMessage.isNotEmpty
-                                ? displaySearchedMessage
-                                : messagesSnapshot.data!)
-                            .map((message) {
-                          return ChatItem(
-                            name: message.username,
-                            message: message.message,
-                            time: formatTime(message.time),
-                            isRead: message.isRead,
-                            imageUrl: message.buyerImageUrl,
-                            senderId: message.senderId,
-                            chatRoomId: message.chatRoomId,
+                          return ListView(
+                            children: (displaySearchedMessage.isNotEmpty
+                                    ? displaySearchedMessage
+                                    : messagesSnapshot.data!)
+                                .map((message) {
+                              return ChatItem(
+                                name: message.username,
+                                message: message.message,
+                                time: formatTime(message.time),
+                                isRead: message.isRead,
+                                imageUrl: message.buyerImageUrl,
+                                senderId: message.senderId,
+                                chatRoomId: message.chatRoomId,
+                              );
+                            }).toList(),
                           );
-                        }).toList(),
+                        },
                       );
                     },
                   );
