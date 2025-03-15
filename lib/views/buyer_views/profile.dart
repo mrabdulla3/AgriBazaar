@@ -166,38 +166,37 @@ class ProfileState extends State<Profile> {
                 : const Center(child: CircularProgressIndicator()),
 
             const SizedBox(height: 20),
-            if (widget.user != null)
-              Obx(() {
-                return ElevatedButton(
-                  onPressed: () {
-                    if (profileController.isEditing.value) {
-                      profileController
-                          .saveProfileData(); // Save data if editing
-                    } else {
-                      profileController.isEditing.value =
-                          true; // Enable editing mode
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 40, vertical: 15),
+            Obx(() {
+              return ElevatedButton(
+                onPressed: () {
+                  if (profileController.isEditing.value) {
+                    print(1);
+                    profileController.saveProfileData(); // Save data if editing
+                  } else {
+                    profileController.isEditing.value =
+                        true; // Enable editing mode
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                    profileController.isEditing.value ? 'Save' : 'Edit profile',
-                    style: GoogleFonts.abhayaLibre(
-                      textStyle: const TextStyle(
-                          fontSize: 18,
-                          letterSpacing: .5,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
-                    ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                ),
+                child: Text(
+                  profileController.isEditing.value ? 'Save' : 'Edit profile',
+                  style: GoogleFonts.abhayaLibre(
+                    textStyle: const TextStyle(
+                        fontSize: 18,
+                        letterSpacing: .5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
                   ),
-                );
-              })
+                ),
+              );
+            })
           ],
         ),
       ),

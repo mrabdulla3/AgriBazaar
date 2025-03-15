@@ -51,9 +51,8 @@ class ProfileController extends GetxController {
   }
 
   Future<void> saveProfileData() async {
-    isUploading.value = true;
-
     try {
+      isUploading.value = true;
       // Only upload the image if it has been edited (i.e., selectedImage is not null)
       if (selectedImage.value != null) {
         String fileName = '${user!.uid}/profile_image.png';
@@ -76,9 +75,9 @@ class ProfileController extends GetxController {
         'name': nameController.text,
         'address': addressController.text,
         'phone': phoneController.text,
-        'profileImageUrl': profileImageUrl,
+        'profileImageUrl': profileImageUrl.value,
       });
-
+      getUserProfileData();
       isEditing.value = false;
     } catch (e) {
       errorMessage.value = 'Error saving profile data: $e';

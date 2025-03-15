@@ -2,6 +2,7 @@ import 'package:agribazar/controllers/farmer_controller/farmer_home_controller.d
 import 'package:agribazar/views/farmer_views/category_crops.dart';
 import 'package:agribazar/views/farmer_views/chat_messagelist.dart';
 import 'package:agribazar/views/farmer_views/notifications.dart';
+import 'package:agribazar/views/farmer_views/orders.dart';
 import 'package:agribazar/views/farmer_views/our_products.dart';
 import 'package:agribazar/views/farmer_views/profile.dart';
 import 'package:agribazar/views/authentication_views/authScreen.dart';
@@ -38,7 +39,7 @@ class _SellerDashboardState extends State<SellerDashboard> {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              Get.off(() => AuthScreen());
+              Get.off(() => const AuthScreen());
             },
           ),
         ],
@@ -256,6 +257,9 @@ class _SellerDashboardState extends State<SellerDashboard> {
           Get.to(() => const OurProducts());
         } else if (label == 'Orders') {
           // Navigate to Orders Page
+          Get.to(() => OrdersScreen(
+                farmerId: FirebaseAuth.instance.currentUser!.uid,
+              ));
         } else if (label == 'Wallet') {
           // Navigate to Wallet Page
         } else if (label == 'Statistics') {

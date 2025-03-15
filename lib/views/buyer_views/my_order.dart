@@ -96,10 +96,9 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
         children: [
           Text(
             "Order ID: #$docId",
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+            style: GoogleFonts.abyssinicaSil(
+              textStyle: const TextStyle(
+                  fontSize: 15, letterSpacing: .5, fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(height: 12),
@@ -133,10 +132,11 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
             children: [
               Text(
                 item['productname'] ?? "Unknown Product",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.black87,
+                style: GoogleFonts.acme(
+                  textStyle: const TextStyle(
+                      fontSize: 16,
+                      letterSpacing: .5,
+                      fontWeight: FontWeight.w700),
                 ),
               ),
               const SizedBox(height: 4),
@@ -165,7 +165,7 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildCancelButton(status, docId),
-        _buildViewDetailsButton(),
+        _buildDeliveredButton(status, docId),
       ],
     );
   }
@@ -174,9 +174,10 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
   Widget _buildCancelButton(String status, String docId) {
     return Obx(() {
       bool isCancelled = orderController.getOrderStatus(docId) == "cancel";
+      bool isDelivered = orderController.getOrderStatus(docId) == "delivered";
 
       return ElevatedButton.icon(
-        onPressed: isCancelled
+        onPressed: isCancelled || isDelivered
             ? null
             : () async {
                 await orderController.changeStatus("cancel", docId);
@@ -184,10 +185,11 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
               },
         icon: const Icon(Icons.cancel, size: 18),
         label: Text(
-          isCancelled ? "Cancelled" : "Cancel Order",
+          isCancelled || isDelivered ? "Cancelled" : "Cancel Order",
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isCancelled ? Colors.grey : Colors.red.shade600,
+          backgroundColor:
+              isCancelled || isDelivered ? Colors.grey : Colors.red.shade600,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -199,19 +201,30 @@ class MyOrdersScreenState extends State<MyOrdersScreen> {
   }
 
   /// Builds the View Details button
-  Widget _buildViewDetailsButton() {
-    return ElevatedButton.icon(
-      onPressed: () {},
-      icon: const Icon(Icons.arrow_forward_ios, size: 16),
-      label: const Text("View Details"),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.yellow.shade800,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+  Widget _buildDeliveredButton(String status, String docId) {
+    return Obx(() {
+      bool isDelivered = orderController.getOrderStatus(docId) == "Delivered";
+      bool isCanceled = orderController.getOrderStatus(docId) == "cancel";
+      return ElevatedButton.icon(
+        onPressed: isDelivered || isCanceled
+            ? null
+            : () async {
+                await orderController.changeStatus("Delivered", docId);
+                orderController.updateOrderStatus(
+                    docId, "Delivered"); // Update UI
+              },
+        icon: const Icon(Icons.arrow_forward_ios, size: 16),
+        label: Text(isDelivered ? "Delivered" : "Not Delivered"),
+        style: ElevatedButton.styleFrom(
+          backgroundColor:
+              isDelivered || isCanceled ? Colors.grey : Colors.yellow.shade800,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-      ),
-    );
+      );
+    });
   }
 }

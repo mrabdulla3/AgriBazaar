@@ -393,16 +393,18 @@ class CartState extends State<Cart> {
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
         child: Obx(
-          () => Text(
-            "Pay Now Rs. ${cartController.total.toStringAsFixed(2)}",
-            style: GoogleFonts.abhayaLibre(
-              textStyle: const TextStyle(
-                  fontSize: 20,
-                  letterSpacing: .5,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            ),
-          ),
+          () => cartController.isLoading.value
+              ? const CircularProgressIndicator()
+              : Text(
+                  "Pay Now Rs. ${cartController.total.toStringAsFixed(2)}",
+                  style: GoogleFonts.abhayaLibre(
+                    textStyle: const TextStyle(
+                        fontSize: 20,
+                        letterSpacing: .5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
+                  ),
+                ),
         ));
   }
 }
