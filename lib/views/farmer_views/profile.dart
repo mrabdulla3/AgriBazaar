@@ -22,6 +22,7 @@ class _ProfileFarmerState extends State<ProfileFarmer> {
     super.initState();
     profileController = Get.put(ProfileController(user: widget.user));
   }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -122,23 +123,21 @@ class _ProfileFarmerState extends State<ProfileFarmer> {
                     ),
                     const SizedBox(height: 10),
                     Obx(() {
-                    print(widget.user!.displayName);
-                    print(profileController.userProfileData!['name']);
-                    return Text(
-                      profileController.userProfileData != null
-                          ? profileController.userProfileData!['name'] ??
-                              widget.user!.displayName ??
-                              'Unknown'
-                          : 'Loading...',
-                      style: GoogleFonts.abhayaLibre(
-                        textStyle: const TextStyle(
-                            fontSize: 20,
-                            letterSpacing: .5,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
-                    );
-                  })
+                      return Text(
+                        profileController.userProfileData != null
+                            ? profileController.userProfileData!['name'] ??
+                                widget.user!.displayName ??
+                                'Unknown'
+                            : 'Loading...',
+                        style: GoogleFonts.abhayaLibre(
+                          textStyle: const TextStyle(
+                              fontSize: 20,
+                              letterSpacing: .5,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black),
+                        ),
+                      );
+                    })
                   ],
                 ),
               ),
@@ -146,24 +145,24 @@ class _ProfileFarmerState extends State<ProfileFarmer> {
 
               // User Information
               Obx(() {
-                return profileController.userProfileData!=null
+                return profileController.userProfileData != null
                     ? Column(
                         children: [
                           buildProfileInfo(
                               Icons.person,
                               profileController.nameController,
-                              profileController.userProfileData['name'] ?? '',
+                              profileController.userProfileData!['name'] ?? '',
                               profileController),
                           buildProfileInfo(
                               Icons.location_on,
                               profileController.addressController,
-                              profileController.userProfileData['address'] ??
+                              profileController.userProfileData!['address'] ??
                                   '',
                               profileController),
                           buildProfileInfo(
                               Icons.phone,
                               profileController.phoneController,
-                              profileController.userProfileData['phone'] ?? '',
+                              profileController.userProfileData!['phone'] ?? '',
                               profileController),
                           buildProfileInfo(
                             Icons.email,
